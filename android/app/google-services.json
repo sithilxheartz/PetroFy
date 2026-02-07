@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "286758761989",
+    "project_id": "petrofy-3e1ab",
+    "storage_bucket": "petrofy-3e1ab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:286758761989:android:a40eb64780b44e3e960e6c",
+        "android_client_info": {
+          "package_name": "com.example.petrofy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJjzUybuxOeCUDvQWcDaR8PY74Dn6vXJs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
