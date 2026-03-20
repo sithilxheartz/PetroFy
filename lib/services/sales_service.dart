@@ -6,7 +6,6 @@ class SalesService {
   final CollectionReference _salesCollection = FirebaseFirestore.instance.collection('fuelSales');
   final CollectionReference _tanksCollection = FirebaseFirestore.instance.collection('fuelTanks');
 
-  // 1. Record a New Sale (with Atomic Transaction)
   Future<String?> recordSale(FuelSaleModel sale) async {
     try {
       DocumentReference tankRef = _tanksCollection.doc(sale.tankId);
@@ -22,12 +21,10 @@ class SalesService {
           return "Insufficient fuel! Remaining: ${currentStock.toStringAsFixed(2)}L";
         }
 
-        // A. Deduct from Tank
         transaction.update(tankRef, {
           'currentQuantity': currentStock - sale.soldQuantity,
         });
 
-        // B. Create Sales Record
         transaction.set(_salesCollection.doc(), sale.toMap());
 
         return null; // Success
@@ -37,25 +34,27 @@ class SalesService {
     }
   }
 
-  // 2. Stream Sales History (Real-time)
-  Stream<List<FuelSaleModel>> getSalesHistory() {
-    return _salesCollection
-        .orderBy('dateTime', descending: true)
+  // FIXED: Corrected .where syntax for pumperId
+  Stream<List<FuelSaleModel>> getPumperSales(String pumperId) {
+    return _firestore
+        .collection('fuelSales')
+        .where('pumperId', isEqualTo: pumperId) 
+        .orderBy('dateTime', descending: true) 
         .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return FuelSaleModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
-      }).toList();
-    });
+        .map((snapshot) => snapshot.docs
+            .map((doc) => FuelSaleModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+            .toList());
   }
 
-  // 3. Get Total Revenue (Optional Helper)
-  Future<double> getTotalRevenue() async {
-    QuerySnapshot query = await _salesCollection.get();
-    double total = 0;
-    for (var doc in query.docs) {
-      total += (doc['soldTotalPrice'] as num).toDouble();
-    }
-    return total;
-  }
+Stream<List<FuelSaleModel>> getPumperFilteredSales(String pumperId, DateTime startDate) {
+  return _firestore
+      .collection('fuelSales')
+      .where('pumperId', isEqualTo: pumperId)
+      .where('dateTime', isGreaterThanOrEqualTo: startDate)
+      .orderBy('dateTime', descending: true)
+      .snapshots()
+      .map((snapshot) => snapshot.docs
+          .map((doc) => FuelSaleModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .toList());
+}
 }

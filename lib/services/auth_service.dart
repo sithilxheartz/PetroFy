@@ -31,7 +31,7 @@ class AuthService {
         mobileNumber: mobileNumber,
         dob: dob,
         role: 'customer', // Default role is always customer
-        joinedDate: DateTime.now(),
+        joinedDate: DateTime.now(), profilePic: '',
       );
 
       // C. Save User Data to Firestore

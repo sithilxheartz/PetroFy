@@ -21,18 +21,22 @@ class FuelSaleModel {
     required this.soldTotalPrice,
   });
 
-  factory FuelSaleModel.fromMap(Map<String, dynamic> map, String docId) {
-    return FuelSaleModel(
-      id: docId,
-      fuelType: map['fuelType'] ?? '',
-      dateTime: (map['dateTime'] as Timestamp).toDate(),
-      pumperName: map['pumperName'] ?? '',
-      pumperId: map['pumperId'] ?? '',
-      soldQuantity: (map['soldQuantity'] as num).toDouble(),
-      tankId: map['tankId'] ?? '',
-      soldTotalPrice: (map['soldTotalPrice'] as num).toDouble(),
-    );
-  }
+factory FuelSaleModel.fromMap(Map<String, dynamic> map, String docId) {
+  return FuelSaleModel(
+    id: docId,
+    fuelType: map['fuelType'] ?? 'Unknown',
+    // Safety check for Timestamp conversion
+    dateTime: map['dateTime'] != null 
+        ? (map['dateTime'] as Timestamp).toDate() 
+        : DateTime.now(),
+    pumperName: map['pumperName'] ?? '',
+    pumperId: map['pumperId'] ?? '',
+    // Use .toDouble() to prevent "int is not a subtype of double" errors
+    soldQuantity: (map['soldQuantity'] as num).toDouble(),
+    tankId: map['tankId'] ?? '',
+    soldTotalPrice: (map['soldTotalPrice'] as num).toDouble(),
+  );
+}
 
   Map<String, dynamic> toMap() {
     return {

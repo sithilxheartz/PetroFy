@@ -91,6 +91,8 @@ class _AddSalePageState extends State<AddSalePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+            extendBodyBehindAppBar:
+          true, // Allows content to scroll under the blurred AppBar
       appBar: AppBar(
         title: Column(
           children: [
@@ -107,7 +109,22 @@ class _AddSalePageState extends State<AddSalePage> {
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
       ),
-      body: Container(
+      body: Stack(
+        children: [
+          Positioned(
+          top: -50,
+          right: -50,
+          child: Container(
+            width: 200, // Slightly larger for better effect
+            height: 200,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.primaryGreen.withOpacity(0.05), // Increased opacity slightly
+            ),
+          ),
+        ),
+        Container(
+                margin: const EdgeInsets.only(top: 85, bottom: 40),
         height: double.infinity,
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -117,10 +134,11 @@ class _AddSalePageState extends State<AddSalePage> {
               StreamBuilder<List<FuelTankModel>>(
                 stream: _fuelService.getFuelTanks(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData)
+                  if (!snapshot.hasData) {
                     return const LinearProgressIndicator(
                       color: AppColors.primaryGreen,
                     );
+                  }
 
                   return Container(
                     padding: const EdgeInsets.symmetric(
@@ -160,7 +178,7 @@ class _AddSalePageState extends State<AddSalePage> {
                   );
                 },
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 20),
 
               FuelTextField(
                 controller: _qtyController,
@@ -169,7 +187,7 @@ class _AddSalePageState extends State<AddSalePage> {
                 onChanged: _calculatePrice,
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 20),
 
               // Digital Receipt Card
               ClipRRect(
@@ -178,7 +196,7 @@ class _AddSalePageState extends State<AddSalePage> {
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(30),
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
                     decoration: BoxDecoration(
                       color: AppColors.primaryGreen.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(25),
@@ -219,7 +237,7 @@ class _AddSalePageState extends State<AddSalePage> {
                 ),
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 20),
               FuelButton(
                 text: "PROCESS TRANSACTION",
                 isLoading: _isLoading,
@@ -230,22 +248,24 @@ class _AddSalePageState extends State<AddSalePage> {
           ),
         ),
       ),
+        ],
+      )
     );
   }
 
   Widget _buildReceiptRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
-            style: const TextStyle(color: AppColors.textDim, fontSize: 12),
+            style: const TextStyle(color: AppColors.textDim, fontSize: 13),
           ),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
           ),
         ],
       ),

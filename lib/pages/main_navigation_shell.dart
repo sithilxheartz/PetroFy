@@ -1,9 +1,13 @@
 import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:petrofy/models/user_model.dart'; // Ensure this import exists
 import 'package:petrofy/pages/admin/add_tank_page.dart';
 import 'package:petrofy/pages/admin/fuel_dashboard.dart';
 import 'package:petrofy/pages/pumper/add_sale_page.dart';
+import 'package:petrofy/pages/pumper/profile_page.dart';
 import 'package:petrofy/pages/user_control_page.dart';
 import '../utils/app_colors.dart';
 
@@ -18,11 +22,13 @@ class MainNavigationShell extends StatefulWidget {
 class _MainNavigationShellState extends State<MainNavigationShell> {
   int _currentIndex = 0;
   late PageController _pageController;
+  UserModel? _currentUser; // Holds the fetched user data
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
+    _fetchUserData(); // Fetch user data on startup
   }
 
   @override
@@ -31,54 +37,78 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     super.dispose();
   }
 
+  // Fetch the logged-in user details from Firestore
+  void _fetchUserData() async {
+    User? firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser != null) {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(firebaseUser.uid)
+          .get();
+
+      if (doc.exists) {
+        setState(() {
+          _currentUser = UserModel.fromMap(doc.data() as Map<String, dynamic>);
+        });
+      }
+    }
+  }
+
   // 1. Define Pages based on Role
   List<Widget> _buildPages() {
+    // Show loading while user data is being fetched
+    if (_currentUser == null) {
+      return List.generate(4, (index) => const Center(
+        child: CircularProgressIndicator(color: AppColors.primaryGreen),
+      ));
+    }
+
     switch (widget.userRole) {
       case 'admin':
       case 'manager':
         return [
-          const FuelLevelDashboard(), // Real-time Tank Status
-          AdminDashboard(), // User Role Control
-          const AddTankPage(), // Register New Hardware
-          const Center(child: Text("AI Analytics Engine")),
+          const FuelLevelDashboard(),
+          AdminDashboard(),
+          const AddTankPage(),
+          PumperProfilePage(user: _currentUser!), // Pass actual user
         ];
       case 'pumper':
         return [
-          const FuelLevelDashboard(), // Real-time Tank Status
-          AdminDashboard(), // Real-time Tank Status
-          const AddSalePage(), // Register New Hardware
-          const Center(child: Text("AI Analytics Engine")),
+          const FuelLevelDashboard(),
+          const AddSalePage(),
+          AdminDashboard(), // Or your Sales History page
+          PumperProfilePage(user: _currentUser!), // Pass actual user
         ];
-      default: // customer
+      default:
         return [
-          const Center(child: Text("Customer Home")),
-          const Center(child: Text("Fuel Stations")),
-          const Center(child: Text("Vehicle Stats")),
+          const Center(child: Text("Home")),
+          const Center(child: Text("Search")),
+          PumperProfilePage(user: _currentUser!),
         ];
     }
   }
 
-  // 2. Define Animated GNav Buttons based on Role
+  // 2. Define Animated GNav Buttons
   List<GButton> _buildNavButtons() {
     if (widget.userRole == 'admin' || widget.userRole == 'manager') {
       return const [
         GButton(icon: Icons.ev_station_outlined, text: 'Inventory'),
         GButton(icon: Icons.people_outline, text: 'Users'),
         GButton(icon: Icons.add_circle_outline, text: 'Register'),
-        GButton(icon: Icons.analytics_outlined, text: 'AI Data'),
+        GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     } else if (widget.userRole == 'pumper') {
       return const [
-        GButton(icon: Icons.ev_station_outlined, text: 'Inventory'),
-        GButton(icon: Icons.ev_station_outlined, text: 'Inventory'),
-        GButton(icon: Icons.add_circle_outline, text: 'Add Sale'),
-        GButton(icon: Icons.analytics_outlined, text: 'AI Data'),
+        GButton(icon: Icons.local_gas_station_outlined, text: 'Stock'),
+        GButton(icon: Icons.add_shopping_cart_outlined, text: 'Sale'),
+        GButton(icon: Icons.history_outlined, text: 'History'),
+        GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     } else {
       return const [
         GButton(icon: Icons.home_outlined, text: 'Home'),
         GButton(icon: Icons.map_outlined, text: 'Find'),
-        GButton(icon: Icons.directions_car_filled_outlined, text: 'Cars'),
+        GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     }
   }
@@ -87,7 +117,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      // CRITICAL: Extends body behind the bottom bar for the "Float" effect
       extendBody: true,
       body: PageView(
         controller: _pageController,
@@ -98,28 +127,24 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           decoration: BoxDecoration(
-            color: AppColors.surface.withOpacity(0.8), // Semi-transparent black
+            color: AppColors.surface.withOpacity(0.8),
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
               color: AppColors.primaryGreen.withOpacity(0.2),
               width: 1.5,
             ),
-        //    boxShadow: [
-        //      BoxShadow(
-          //      color: AppColors.primaryGreen.withOpacity(0.1),
-            //    blurRadius: 20,
-              //  spreadRadius: 2,
-                //offset: const Offset(0, 5),
-             // ),
-           // ],
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryGreen.withOpacity(0.1),
+                blurRadius: 20,
+                spreadRadius: 2,
+              )
+            ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(30),
             child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: 10,
-                sigmaY: 10,
-              ), // The Glass Frost
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: GNav(
@@ -132,10 +157,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                   activeColor: AppColors.primaryGreen,
                   iconSize: 24,
                   tabBackgroundColor: AppColors.primaryGreen.withOpacity(0.1),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   selectedIndex: _currentIndex,
                   onTabChange: (index) {
                     _pageController.animateToPage(

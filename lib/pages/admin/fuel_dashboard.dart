@@ -31,7 +31,7 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
           true, // Allows content to scroll under the blurred AppBar
       appBar: AppBar(
         title: const Text(
-          "REAL-TIME INVENTORY",
+          "FUEL INVENTORY",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 0,
@@ -60,12 +60,13 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
           StreamBuilder<List<FuelTankModel>>(
             stream: _fuelService.getTanksByType(_selectedFilter),
             builder: (context, snapshot) {
-              if (!snapshot.hasData)
+              if (!snapshot.hasData) {
                 return const Center(
                   child: CircularProgressIndicator(
                     color: AppColors.primaryGreen,
                   ),
                 );
+              }
 
               final tanks = snapshot.data!;
               return ListView.builder(
@@ -73,7 +74,7 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
                   20,
                   100,
                   20,
-                  20,
+                  140,
                 ), // Top padding for transparent AppBar
                 itemCount: tanks.length,
                 itemBuilder: (context, index) => _buildTankCard(tanks[index]),
@@ -213,7 +214,10 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
+        border: Border.all(
+          color: AppColors.primaryGreen.withOpacity(0.1),
+          width: 1.5,
+        ),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
