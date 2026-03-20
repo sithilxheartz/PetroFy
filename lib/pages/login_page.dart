@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:petrofy/home_page.dart';
-import 'package:petrofy/pages/user_control_page.dart';
 import '../services/auth_service.dart';
+import '../utils/app_colors.dart';
+import '../widgets/custom_components.dart';
 import 'signup_page.dart';
-import '../models/user_model.dart'; // Import your model
-
-// Import your dashboard pages
-// import 'admin_dashboard.dart';
-// import 'customer_home.dart';
+import 'main_navigation_shell.dart';
+import '../models/user_model.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,160 +20,135 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
 
   void _handleLogin() async {
-    setState(() => _isLoading = true);
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      showCustomSnackBar(
+        context,
+        "Please enter your credentials",
+        isError: true,
+      );
+      return;
+    }
 
-    // Call the service we created earlier
+    setState(() => _isLoading = true);
     UserModel? user = await _authService.signInUser(
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
     );
-
     setState(() => _isLoading = false);
 
     if (user != null) {
-      _navigateBasedOnRole(user.role);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MainNavigationShell(userRole: user.role),
+        ),
+      );
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Login Failed. Check your email or password."),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
+      if (mounted)
+        showCustomSnackBar(context, "Invalid Email or Password", isError: true);
     }
-  }
-
-  void _navigateBasedOnRole(String role) {
-    Widget nextScreen;
-
-    switch (role) {
-      case 'admin':
-        nextScreen = AdminDashboard();
-        break;
-      case 'manager':
-        nextScreen = ManagerHome();
-        break;
-      case 'pumper':
-        nextScreen = PumperHome();
-        break;
-      case 'customer':
-        nextScreen = CustomerHome();
-        break;
-      default:
-        nextScreen = CustomerHome(); // Default fallback
-    }
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => nextScreen),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 1. Logo or Icon
-              const Icon(Icons.water_drop, size: 80, color: Colors.blueAccent),
-              const SizedBox(height: 20),
-
-              const Text(
-                "Welcome Back!",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+      backgroundColor: AppColors.background,
+      body: Container(
+        decoration: BoxDecoration(
+          // Subtle radial gradient for a "High-Tech" glow
+          gradient: RadialGradient(
+            center: Alignment.topLeft,
+            radius: 1.5,
+            colors: [
+              AppColors.primaryGreen.withOpacity(0.05),
+              AppColors.background,
+            ],
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.auto_awesome,
+                  size: 80,
+                  color: AppColors.primaryGreen,
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                "Login to continue",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 40),
-
-              // 2. Email Field
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: "Email",
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 15),
+                const Text(
+                  "PETROFY",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 4,
                   ),
-                  filled: true,
-                  fillColor: Colors.white,
                 ),
-              ),
-              const SizedBox(height: 16),
-
-              // 3. Password Field
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: "Password",
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
+                const Text(
+                  "Intelligent Fuel Management",
+                  style: TextStyle(color: AppColors.textDim, fontSize: 14),
                 ),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 40),
 
-              // 4. Login Button
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : SizedBox(
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _handleLogin,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          foregroundColor: Colors.white, // Text color
-                        ),
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ),
+                FuelTextField(
+                  controller: _emailController,
+                  label: "Email Address",
+                  icon: Icons.alternate_email,
+                ),
+                SizedBox(height: 10),
+                FuelTextField(
+                  controller: _passwordController,
+                  label: "Password",
+                  icon: Icons.lock_outline,
+                  isPassword: true,
+                ),
+
+                const SizedBox(height: 5),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {}, // Add Forgot Password logic later
+                    child: const Text(
+                      "Forgot Password?",
+                      style: TextStyle(color: AppColors.textDim),
                     ),
+                  ),
+                ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 5),
+                FuelButton(
+                  text: "AUTHENTICATE",
+                  isLoading: _isLoading,
+                  onPressed: _handleLogin,
+                ),
 
-              // 5. Register Link
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Don't have an account?"),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Don't have an account?",
+                      style: TextStyle(color: AppColors.textDim),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const SignupPage(),
                         ),
-                      );
-                    },
-                    child: const Text("Register"),
-                  ),
-                ],
-              ),
-            ],
+                      ),
+                      child: const Text(
+                        "Register Now",
+                        style: TextStyle(
+                          color: AppColors.primaryGreen,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
