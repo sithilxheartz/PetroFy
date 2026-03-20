@@ -6,6 +6,8 @@ class FuelTextField extends StatefulWidget {
   final String label;
   final IconData icon;
   final bool isPassword;
+  // --- ADD THIS LINE ---
+  final Function(String)? onChanged; 
 
   const FuelTextField({
     super.key,
@@ -13,6 +15,7 @@ class FuelTextField extends StatefulWidget {
     required this.label,
     required this.icon,
     this.isPassword = false,
+    this.onChanged, // --- ADD THIS LINE ---
   });
 
   @override
@@ -20,7 +23,6 @@ class FuelTextField extends StatefulWidget {
 }
 
 class _FuelTextFieldState extends State<FuelTextField> {
-  // Local state to toggle password visibility
   bool _obscureText = true;
 
   @override
@@ -29,30 +31,23 @@ class _FuelTextFieldState extends State<FuelTextField> {
       padding: const EdgeInsets.only(bottom: 0),
       child: TextField(
         controller: widget.controller,
-        // If it's a password field, use the toggled state. Otherwise, always false.
+        // --- ADD THIS LINE ---
+        onChanged: widget.onChanged, 
         obscureText: widget.isPassword ? _obscureText : false,
-        style: const TextStyle(color: AppColors.textMain),
+        style: const TextStyle(color: AppColors.textMain, fontFamily: 'Poppins'),
         decoration: InputDecoration(
           labelText: widget.label,
           labelStyle: const TextStyle(color: AppColors.textDim),
           prefixIcon: Icon(widget.icon, color: AppColors.primaryGreen),
-
-          // --- Added Password Eye Icon ---
-          suffixIcon: widget.isPassword
-              ? IconButton(
-                  icon: Icon(
-                    _obscureText ? Icons.visibility_off : Icons.visibility,
-                    color: AppColors.textDim,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscureText = !_obscureText;
-                    });
-                  },
-                )
-              : null,
-
-          // -------------------------------
+          suffixIcon: widget.isPassword 
+            ? IconButton(
+                icon: Icon(
+                  _obscureText ? Icons.visibility_off : Icons.visibility,
+                  color: AppColors.textDim,
+                ),
+                onPressed: () => setState(() => _obscureText = !_obscureText),
+              )
+            : null,
           filled: true,
           fillColor: AppColors.surface,
           border: OutlineInputBorder(
@@ -61,10 +56,7 @@ class _FuelTextFieldState extends State<FuelTextField> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: const BorderSide(
-              color: AppColors.primaryGreen,
-              width: 1,
-            ),
+            borderSide: const BorderSide(color: AppColors.primaryGreen, width: 1),
           ),
         ),
       ),

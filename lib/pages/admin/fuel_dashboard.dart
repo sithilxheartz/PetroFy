@@ -15,29 +15,32 @@ class FuelLevelDashboard extends StatefulWidget {
 class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
   final FuelService _fuelService = FuelService();
   String _selectedFilter = 'All';
-  final List<String> _fuelTypes = ['All', 'Auto Diesel', 'Super Diesel', '92 Petrol', '95 Petrol'];
+  final List<String> _fuelTypes = [
+    'All',
+    'Auto Diesel',
+    'Super Diesel',
+    '92 Petrol',
+    '95 Petrol',
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      extendBodyBehindAppBar: true, // Allows content to scroll under the blurred AppBar
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70),
-        child: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // Frost effect
-            child: AppBar(
-              title: const Text(
-                "SYSTEM INVENTORY",
-                style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2, fontSize: 18),
-              ),
-              backgroundColor: AppColors.background.withOpacity(0.5),
-              elevation: 0,
-              actions: [_buildFilterDropdown()],
-            ),
+      extendBodyBehindAppBar:
+          true, // Allows content to scroll under the blurred AppBar
+      appBar: AppBar(
+        title: const Text(
+          "REAL-TIME INVENTORY",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0,
+            fontSize: 20,
           ),
         ),
+        backgroundColor: AppColors.background.withOpacity(0.5),
+        elevation: 0,
+        actions: [_buildFilterDropdown()],
       ),
       body: Stack(
         children: [
@@ -57,11 +60,21 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
           StreamBuilder<List<FuelTankModel>>(
             stream: _fuelService.getTanksByType(_selectedFilter),
             builder: (context, snapshot) {
-              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen));
-              
+              if (!snapshot.hasData)
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primaryGreen,
+                  ),
+                );
+
               final tanks = snapshot.data!;
               return ListView.builder(
-                padding: const EdgeInsets.fromLTRB(20, 100, 20, 20), // Top padding for transparent AppBar
+                padding: const EdgeInsets.fromLTRB(
+                  20,
+                  100,
+                  20,
+                  20,
+                ), // Top padding for transparent AppBar
                 itemCount: tanks.length,
                 itemBuilder: (context, index) => _buildTankCard(tanks[index]),
               );
@@ -71,14 +84,15 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
       ),
     );
   }
+
   Widget _buildTankCard(FuelTankModel tank) {
     double percentage = (tank.currentQuantity / tank.capacity) * 100;
-    bool isLow = percentage < 25; // Alert if below 20%
+    bool isLow = percentage < 20; // Alert if below 20%
     Color statusColor = isLow ? AppColors.error : AppColors.primaryGreen;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
@@ -92,10 +106,18 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white70,
+              color: Colors.white,
             ),
           ),
-          const SizedBox(height: 10),
+          Text(
+            "Price: Rs.${tank.fuelPrice}0",
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDim,
+            ),
+          ),
+          const SizedBox(height: 15),
 
           // Chart Section
           Center(
@@ -143,7 +165,7 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 15),
 
           // Data Footer
           Row(
@@ -156,13 +178,15 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
                     "Current Stock: ${tank.currentQuantity} L",
                     style: const TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                   Text(
                     "Capacity: ${tank.capacity} L",
                     style: const TextStyle(
                       fontSize: 12,
+                      fontWeight: FontWeight.bold,
                       color: AppColors.textDim,
                     ),
                   ),
@@ -189,6 +213,7 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
