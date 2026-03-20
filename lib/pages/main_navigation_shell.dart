@@ -1,11 +1,14 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:petrofy/pages/admin/add_tank_page.dart';
+import 'package:petrofy/pages/admin/fuel_dashboard.dart';
 import 'package:petrofy/pages/user_control_page.dart';
 import '../utils/app_colors.dart';
-// Import your pages here...
 
 class MainNavigationShell extends StatefulWidget {
   final String userRole;
-  const MainNavigationShell({required this.userRole});
+  const MainNavigationShell({super.key, required this.userRole});
 
   @override
   State<MainNavigationShell> createState() => _MainNavigationShellState();
@@ -13,39 +16,66 @@ class MainNavigationShell extends StatefulWidget {
 
 class _MainNavigationShellState extends State<MainNavigationShell> {
   int _currentIndex = 0;
+  late PageController _pageController;
 
-  // This function decides which pages to show based on the role
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  // 1. Define Pages based on Role
   List<Widget> _buildPages() {
     switch (widget.userRole) {
       case 'admin':
       case 'manager':
-        return [AdminDashboard(), AdminDashboard(), AdminDashboard()];
+        return [
+          AdminDashboard(),           // User Role Control
+          const FuelLevelDashboard(), // Real-time Tank Status
+          const AddTankPage(),        // Register New Hardware
+          const Center(child: Text("AI Analytics Engine")),
+        ];
       case 'pumper':
-        return [AdminDashboard(), AdminDashboard(), AdminDashboard()];
+        return [
+          const Center(child: Text("Pump Control")),
+          const Center(child: Text("Queue List")),
+          const Center(child: Text("My Profile")),
+        ];
       default: // customer
-        return [AdminDashboard(), AdminDashboard(), AdminDashboard()];
+        return [
+          const Center(child: Text("Customer Home")),
+          const Center(child: Text("Fuel Stations")),
+          const Center(child: Text("Vehicle Stats")),
+        ];
     }
   }
 
-  // This function decides which icons to show in the Bottom Bar
-  List<BottomNavigationBarItem> _buildNavItems() {
+  // 2. Define Animated GNav Buttons based on Role
+  List<GButton> _buildNavButtons() {
     if (widget.userRole == 'admin' || widget.userRole == 'manager') {
       return const [
-        BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
-        BottomNavigationBarItem(icon: Icon(Icons.ev_station), label: 'Tanks'),
-        BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'AI Prediction'),
+        GButton(icon: Icons.people_outline, text: 'Users'),
+        GButton(icon: Icons.ev_station_outlined, text: 'Inventory'),
+        GButton(icon: Icons.add_circle_outline, text: 'Register'),
+        GButton(icon: Icons.analytics_outlined, text: 'AI Data'),
       ];
     } else if (widget.userRole == 'pumper') {
       return const [
-        BottomNavigationBarItem(icon: Icon(Icons.local_gas_station), label: 'Pump'),
-        BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Queue'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        GButton(icon: Icons.local_gas_station, text: 'Pump'),
+        GButton(icon: Icons.list_alt, text: 'Queue'),
+        GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     } else {
       return const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Find Fuel'),
-        BottomNavigationBarItem(icon: Icon(Icons.directions_car), label: 'My Car'),
+        GButton(icon: Icons.home_outlined, text: 'Home'),
+        GButton(icon: Icons.map_outlined, text: 'Find'),
+        GButton(icon: Icons.directions_car_filled_outlined, text: 'Cars'),
       ];
     }
   }
@@ -54,18 +84,63 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: IndexedStack( // Keeps page state alive
-        index: _currentIndex,
+      // CRITICAL: Extends body behind the bottom bar for the "Float" effect
+      extendBody: true, 
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) => setState(() => _currentIndex = index),
         children: _buildPages(),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primaryGreen,
-        unselectedItemColor: AppColors.textDim,
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        items: _buildNavItems(),
-        onTap: (index) => setState(() => _currentIndex = index),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          decoration: BoxDecoration(
+            color: AppColors.surface.withOpacity(0.8), // Semi-transparent black
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: AppColors.primaryGreen.withOpacity(0.2), 
+              width: 1.5
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryGreen.withOpacity(0.1),
+                blurRadius: 20,
+                spreadRadius: 2,
+                offset: const Offset(0, 5),
+              )
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(30),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // The Glass Frost
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: GNav(
+                  haptic: true,
+                  tabBorderRadius: 20,
+                  curve: Curves.easeOutExpo,
+                  duration: const Duration(milliseconds: 400),
+                  gap: 8,
+                  color: AppColors.textDim,
+                  activeColor: AppColors.primaryGreen,
+                  iconSize: 24,
+                  tabBackgroundColor: AppColors.primaryGreen.withOpacity(0.1),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  selectedIndex: _currentIndex,
+                  onTabChange: (index) {
+                    _pageController.animateToPage(
+                      index,
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut,
+                    );
+                  },
+                  tabs: _buildNavButtons(),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
