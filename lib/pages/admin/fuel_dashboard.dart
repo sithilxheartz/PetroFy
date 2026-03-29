@@ -49,8 +49,8 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
             top: -50,
             right: -50,
             child: Container(
-              width: 200,
-              height: 200,
+              width: 250,
+              height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.primaryGreen.withOpacity(0.05),

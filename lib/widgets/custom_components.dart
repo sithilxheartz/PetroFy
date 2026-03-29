@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../utils/app_colors.dart';
 
 class FuelTextField extends StatefulWidget {
@@ -6,8 +7,10 @@ class FuelTextField extends StatefulWidget {
   final String label;
   final IconData icon;
   final bool isPassword;
-  // --- ADD THIS LINE ---
   final Function(String)? onChanged;
+  // --- ADD THESE TWO LINES ---
+  final TextInputType keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   const FuelTextField({
     super.key,
@@ -15,7 +18,9 @@ class FuelTextField extends StatefulWidget {
     required this.label,
     required this.icon,
     this.isPassword = false,
-    this.onChanged, // --- ADD THIS LINE ---
+    this.onChanged,
+    this.keyboardType = TextInputType.text, // Default to text
+    this.inputFormatters, // Default to null
   });
 
   @override
@@ -27,44 +32,19 @@ class _FuelTextFieldState extends State<FuelTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 0),
-      child: TextField(
-        controller: widget.controller,
-        // --- ADD THIS LINE ---
-        onChanged: widget.onChanged,
-        obscureText: widget.isPassword ? _obscureText : false,
-        style: const TextStyle(
-          color: AppColors.textMain,
-          fontFamily: 'Poppins',
-        ),
-        decoration: InputDecoration(
-          labelText: widget.label,
-          labelStyle: const TextStyle(color: AppColors.textDim),
-          prefixIcon: Icon(widget.icon, color: AppColors.primaryGreen),
-          suffixIcon: widget.isPassword
-              ? IconButton(
-                  icon: Icon(
-                    _obscureText ? Icons.visibility_off : Icons.visibility,
-                    color: AppColors.textDim,
-                  ),
-                  onPressed: () => setState(() => _obscureText = !_obscureText),
-                )
-              : null,
-          filled: true,
-          fillColor: AppColors.surface,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
-            borderSide: const BorderSide(
-              color: AppColors.primaryGreen,
-              width: 1,
-            ),
-          ),
-        ),
+    return TextField(
+      controller: widget.controller,
+      onChanged: widget.onChanged,
+      // --- ADD THESE TWO LINES ---
+      keyboardType: widget.keyboardType,
+      inputFormatters: widget.inputFormatters,
+      
+      obscureText: widget.isPassword ? _obscureText : false,
+      style: const TextStyle(color: AppColors.textMain),
+      decoration: InputDecoration(
+        labelText: widget.label,
+        prefixIcon: Icon(widget.icon, color: AppColors.primaryGreen),
+        // ... rest of your existing decoration ...
       ),
     );
   }

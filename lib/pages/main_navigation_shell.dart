@@ -140,13 +140,13 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
               color: AppColors.primaryGreen.withOpacity(0.2),
               width: 1.5,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryGreen.withOpacity(0.1),
-                blurRadius: 20,
-                spreadRadius: 2,
-              ),
-            ],
+        //    boxShadow: [
+          //    BoxShadow(
+          //      color: AppColors.primaryGreen.withOpacity(0.1),
+          //      blurRadius: 20,
+          //      spreadRadius: 2,
+          //    ),
+         //   ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(30),

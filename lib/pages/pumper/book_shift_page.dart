@@ -75,8 +75,8 @@ class _BookShiftPageState extends State<BookShiftPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "RESERVE SHIFT",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,),
+                    "RESERVE YOUR SHIFT",
+                    style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold,),
                   ),
                   const Text(
                     "Select your shift details below.",
@@ -137,7 +137,7 @@ class _BookShiftPageState extends State<BookShiftPage> {
                     (v) => setState(() => _selectedPump = v!),
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 20),
 
                   // ACTION BUTTON
                   FuelButton(
@@ -162,7 +162,7 @@ class _BookShiftPageState extends State<BookShiftPage> {
           color: AppColors.primaryGreen,
           fontSize: 10,
           fontWeight: FontWeight.bold,
-          letterSpacing: 0.5,
+          letterSpacing: 1.5,
         ),
       );
 

@@ -43,7 +43,7 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
       extendBodyBehindAppBar: true, 
       appBar: AppBar(
         title: const Text(
-          "SHIFT ROSTER",
+          "DAILY SHIFT ROSTER",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
@@ -52,18 +52,22 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 15, top: 8, bottom: 8),
-            child: TextButton.icon(
-              onPressed: _showBookingSheet,
-              icon: const Icon(Icons.add_task_rounded, color: Colors.white, size: 18),
-              label: const Text(
-                "BOOK SHIFT",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              style: TextButton.styleFrom(
-                backgroundColor: AppColors.surface,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
+            child: Container(
+              width: 155,
+              height: 35,
+              child: TextButton.icon(
+                onPressed: _showBookingSheet,
+                icon: const Icon(Icons.add, color: Colors.white, size: 18),
+                label: const Text(
+                  "BOOK SHIFT",
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                style: TextButton.styleFrom(
+                  backgroundColor: AppColors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
+                  ),
                 ),
               ),
             ),
@@ -203,6 +207,6 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
   }
 
   Widget _buildGlow() {
-    return Container(width: 200, height: 200, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primaryGreen.withOpacity(0.05)));
+    return Container(width: 250, height: 250, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primaryGreen.withOpacity(0.05)));
   }
 }

@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../models/fuel_sale_model.dart';
 import '../../models/fuel_tank_model.dart';
 import '../../services/fuel_service.dart';
@@ -44,6 +45,18 @@ class _AddSalePageState extends State<AddSalePage> {
       return;
     }
 
+    double enteredQty = double.tryParse(_qtyController.text) ?? 0;
+
+    // Safety Logic: Prevent selling more than available stock
+    if (enteredQty > _selectedTank!.currentQuantity) {
+      showCustomSnackBar(
+        context,
+        "Insufficient Stock! Only ${_selectedTank!.currentQuantity.toStringAsFixed(1)}L available.",
+        isError: true,
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -60,7 +73,7 @@ class _AddSalePageState extends State<AddSalePage> {
         dateTime: DateTime.now(),
         pumperName: fullName,
         pumperId: user.uid,
-        soldQuantity: double.parse(_qtyController.text),
+        soldQuantity: enteredQty,
         tankId: _selectedTank!.id,
         soldTotalPrice: _totalPrice,
       );
@@ -91,48 +104,40 @@ class _AddSalePageState extends State<AddSalePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      extendBodyBehindAppBar:
-          true, // Allows content to scroll under the blurred AppBar
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Column(
-          children: [
-            const Text(
-              "DISPENSE FUEL SALES",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0,
-                fontSize: 23,
-              ),
-            ),
-          ],
+        title: const Text(
+          "DISPENSE FUEL",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
       ),
       body: Stack(
         children: [
+          // Background Glow Decoration
           Positioned(
             top: -50,
             right: -50,
             child: Container(
-              width: 200, // Slightly larger for better effect
-              height: 200,
+              width: 250,
+              height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primaryGreen.withOpacity(
-                  0.05,
-                ), // Increased opacity slightly
+                color: AppColors.primaryGreen.withOpacity(0.05),
               ),
             ),
           ),
-          Container(
-            margin: const EdgeInsets.only(top: 85, bottom: 40),
-            height: double.infinity,
+
+          SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 1. Fuel Type Selection
+                  _buildSectionLabel("SELECT FUEL TYPE"),
+                  const SizedBox(height: 10),
                   StreamBuilder<List<FuelTankModel>>(
                     stream: _fuelService.getFuelTanks(),
                     builder: (context, snapshot) {
@@ -156,11 +161,10 @@ class _AddSalePageState extends State<AddSalePage> {
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<FuelTankModel>(
-                            hint: const Text("Select Fuel Type"),
+                            hint: const Text("Select Fuel Product"),
                             value: _selectedTank,
                             isExpanded: true,
                             dropdownColor: AppColors.surface,
-                            // FIXED: The map now returns the object, and == handles the rest
                             items: snapshot.data!.map((tank) {
                               return DropdownMenuItem<FuelTankModel>(
                                 value: tank,
@@ -180,69 +184,40 @@ class _AddSalePageState extends State<AddSalePage> {
                       );
                     },
                   ),
-                  const SizedBox(height: 20),
 
-                  FuelTextField(
-                    controller: _qtyController,
-                    label: "Sold Quantity (Liters)",
-                    icon: Icons.water_drop_outlined,
-                    onChanged: _calculatePrice,
-                  ),
+                  const SizedBox(height: 15),
 
-                  const SizedBox(height: 20),
-
-                  // Digital Receipt Card
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(25),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 20,
+                  // 2. Quantity Input
+                  _buildSectionLabel("DISPENSE VOLUME"),
+                  const SizedBox(height: 5),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Container(
+                      child: FuelTextField(
+                        controller: _qtyController,
+                        label: "Quantity in Liters",
+                        icon: Icons.water_drop_outlined,
+                        onChanged: _calculatePrice,
+                        // --- ADD THESE ---
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
                         ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryGreen.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(25),
-                          border: Border.all(
-                            color: AppColors.primaryGreen.withOpacity(0.2),
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            const Text(
-                              "TRANSACTION TOTAL",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 2,
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              "LKR ${_totalPrice.toStringAsFixed(2)}",
-                              style: const TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primaryGreen,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Divider(color: Colors.white10),
-                            _buildReceiptRow(
-                              "Rate",
-                              "LKR ${_selectedTank?.fuelPrice ?? 0.00}",
-                            ),
-                            _buildReceiptRow("Status", "Ready for Auth"),
-                          ],
-                        ),
+                        inputFormatters: [
+                          // This RegExp allows only numbers and ONE decimal point
+                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                        ],
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 20),
+
+                  // 3. Digital Receipt Card with Stock Info
+                  _buildReceiptCard(),
+
+                  const SizedBox(height: 20),
+
+                  // 4. Action Button
                   FuelButton(
                     text: "PROCESS TRANSACTION",
                     isLoading: _isLoading,
@@ -258,19 +233,107 @@ class _AddSalePageState extends State<AddSalePage> {
     );
   }
 
-  Widget _buildReceiptRow(String label, String value) {
+  // --- UI HELPER WIDGETS ---
+
+  Widget _buildSectionLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: AppColors.primaryGreen,
+        fontSize: 10,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 1.5,
+      ),
+    );
+  }
+
+  Widget _buildReceiptCard() {
+    double enteredQty = double.tryParse(_qtyController.text) ?? 0;
+    bool isOverStock =
+        _selectedTank != null && enteredQty > _selectedTank!.currentQuantity;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(25),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
+          decoration: BoxDecoration(
+            color: AppColors.primaryGreen.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(25),
+            border: Border.all(color: AppColors.primaryGreen.withOpacity(0.2)),
+          ),
+          child: Column(
+            children: [
+              const Text(
+                "TRANSACTION TOTAL",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "LKR ${_totalPrice.toStringAsFixed(2)}",
+                style: const TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryGreen,
+                ),
+              ),
+              const SizedBox(height: 15),
+              const Divider(color: Colors.white10, thickness: 1),
+              const SizedBox(height: 10),
+
+              // NEW: Live Stock Tracking
+              _buildReceiptRow(
+                "Available Stock",
+                _selectedTank != null
+                    ? "${_selectedTank!.currentQuantity.toStringAsFixed(1)} L"
+                    : "--",
+              ),
+              _buildReceiptRow(
+                "Unit Rate",
+                "LKR ${_selectedTank?.fuelPrice.toStringAsFixed(2) ?? "0.00"}",
+              ),
+              _buildReceiptRow(
+                "Auth Status",
+                isOverStock ? "Insufficient Stock" : "System Ready",
+                valueColor: isOverStock
+                    ? Colors.redAccent
+                    : AppColors.primaryGreen,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReceiptRow(
+    String label,
+    String value, {
+    Color valueColor = Colors.white,
+  }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
-            style: const TextStyle(color: AppColors.textDim, fontSize: 13),
+            style: const TextStyle(color: AppColors.textDim, fontSize: 12),
           ),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: valueColor,
+            ),
           ),
         ],
       ),
