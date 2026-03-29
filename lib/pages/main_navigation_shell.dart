@@ -10,6 +10,7 @@ import 'package:petrofy/pages/admin/fuel_dashboard.dart';
 import 'package:petrofy/pages/pumper/add_sale_page.dart';
 import 'package:petrofy/pages/pumper/book_shift_page.dart';
 import 'package:petrofy/pages/pumper/profile_page.dart';
+import 'package:petrofy/pages/pumper/shift_view_page.dart';
 import 'package:petrofy/pages/user_control_page.dart';
 import '../utils/app_colors.dart';
 
@@ -60,9 +61,12 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   List<Widget> _buildPages() {
     // Show loading while user data is being fetched
     if (_currentUser == null) {
-      return List.generate(4, (index) => const Center(
-        child: CircularProgressIndicator(color: AppColors.primaryGreen),
-      ));
+      return List.generate(
+        4,
+        (index) => const Center(
+          child: CircularProgressIndicator(color: AppColors.primaryGreen),
+        ),
+      );
     }
 
     switch (widget.userRole) {
@@ -77,10 +81,10 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       case 'pumper':
         return [
           const FuelLevelDashboard(),
-         const AddSalePage(),
-         //  const ApproveShiftsPage(),
-          BookShiftPage(user: _currentUser!,), // Or your Sales History page
-          PumperProfilePage(user: _currentUser!), // Pass actual user
+          const AddSalePage(),
+          //  const ApproveShiftsPage(),
+          ShiftViewPage(user: _currentUser!), // Pass actual user
+          PumperProfilePage(user: _currentUser!),
         ];
       default:
         return [
@@ -141,7 +145,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                 color: AppColors.primaryGreen.withOpacity(0.1),
                 blurRadius: 20,
                 spreadRadius: 2,
-              )
+              ),
             ],
           ),
           child: ClipRRect(
@@ -160,7 +164,10 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                   activeColor: AppColors.primaryGreen,
                   iconSize: 24,
                   tabBackgroundColor: AppColors.primaryGreen.withOpacity(0.1),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   selectedIndex: _currentIndex,
                   onTabChange: (index) {
                     _pageController.animateToPage(

@@ -4,32 +4,51 @@ import '../models/shift_model.dart';
 class ShiftService {
   final CollectionReference _shiftCollection = FirebaseFirestore.instance.collection('shiftSchedule');
 
-  // Logic: Prevent double booking of the same pump on the same shift/date
   Future<String?> requestShift(ShiftModel shift) async {
     try {
-      // 1. Check if this specific pump is already taken for this date and shift
-      final QuerySnapshot existing = await _shiftCollection
-          .where('date', isEqualTo: Timestamp.fromDate(shift.date))
+      // 0. Normalize date to midnight for accurate querying
+      DateTime normalizedDate = DateTime(shift.date.year, shift.date.month, shift.date.day);
+      Timestamp dateTimestamp = Timestamp.fromDate(normalizedDate);
+
+      // --- CONSTRAINT 1: Is this specific PUMP already taken by SOMEONE ELSE? ---
+      final QuerySnapshot pumpTaken = await _shiftCollection
+          .where('date', isEqualTo: dateTimestamp)
           .where('shiftType', isEqualTo: shift.shiftType)
           .where('pumpNumber', isEqualTo: shift.pumpNumber)
           .get();
 
-      if (existing.docs.isNotEmpty) {
-        return "This pump is already booked for the ${shift.shiftType} shift on this date.";
+      if (pumpTaken.docs.isNotEmpty) {
+        return "This pump is already assigned to someone else for the ${shift.shiftType} shift.";
       }
 
-      // 2. If clear, add the request
-      await _shiftCollection.add(shift.toMap());
+      // --- CONSTRAINT 2: Has THIS PUMPER already booked a different pump? ---
+      final QuerySnapshot pumperAlreadyBooked = await _shiftCollection
+          .where('pumperId', isEqualTo: shift.pumperId)
+          .where('date', isEqualTo: dateTimestamp)
+          .where('shiftType', isEqualTo: shift.shiftType)
+          .get();
+
+      if (pumperAlreadyBooked.docs.isNotEmpty) {
+        return "You have already reserved a pump for the ${shift.shiftType} shift on this date.";
+      }
+
+      // 3. If both checks pass, save the shift as 'accepted'
+      Map<String, dynamic> shiftData = shift.toMap();
+      shiftData['status'] = 'accepted';
+      shiftData['date'] = dateTimestamp;
+
+      await _shiftCollection.add(shiftData);
       return null; // Success
     } catch (e) {
-      return e.toString();
+      return "Connection Error: ${e.toString()}";
     }
   }
-  
-  // Get all shifts for the admin approval page
-  Stream<List<ShiftModel>> getAllShifts() {
+
+  // Stream for the Roster View
+  Stream<List<ShiftModel>> getShiftsByDate(DateTime date) {
+    DateTime searchDate = DateTime(date.year, date.month, date.day);
     return _shiftCollection
-        .orderBy('date', descending: true)
+        .where('date', isEqualTo: Timestamp.fromDate(searchDate))
         .snapshots()
         .map((snap) => snap.docs
             .map((doc) => ShiftModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))

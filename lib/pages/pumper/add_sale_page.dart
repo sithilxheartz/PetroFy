@@ -101,7 +101,7 @@ class _AddSalePageState extends State<AddSalePage> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 letterSpacing: 0,
-                fontSize: 20,
+                fontSize: 23,
               ),
             ),
           ],

@@ -7,7 +7,7 @@ class FuelTextField extends StatefulWidget {
   final IconData icon;
   final bool isPassword;
   // --- ADD THIS LINE ---
-  final Function(String)? onChanged; 
+  final Function(String)? onChanged;
 
   const FuelTextField({
     super.key,
@@ -32,22 +32,25 @@ class _FuelTextFieldState extends State<FuelTextField> {
       child: TextField(
         controller: widget.controller,
         // --- ADD THIS LINE ---
-        onChanged: widget.onChanged, 
+        onChanged: widget.onChanged,
         obscureText: widget.isPassword ? _obscureText : false,
-        style: const TextStyle(color: AppColors.textMain, fontFamily: 'Poppins'),
+        style: const TextStyle(
+          color: AppColors.textMain,
+          fontFamily: 'Poppins',
+        ),
         decoration: InputDecoration(
           labelText: widget.label,
           labelStyle: const TextStyle(color: AppColors.textDim),
           prefixIcon: Icon(widget.icon, color: AppColors.primaryGreen),
-          suffixIcon: widget.isPassword 
-            ? IconButton(
-                icon: Icon(
-                  _obscureText ? Icons.visibility_off : Icons.visibility,
-                  color: AppColors.textDim,
-                ),
-                onPressed: () => setState(() => _obscureText = !_obscureText),
-              )
-            : null,
+          suffixIcon: widget.isPassword
+              ? IconButton(
+                  icon: Icon(
+                    _obscureText ? Icons.visibility_off : Icons.visibility,
+                    color: AppColors.textDim,
+                  ),
+                  onPressed: () => setState(() => _obscureText = !_obscureText),
+                )
+              : null,
           filled: true,
           fillColor: AppColors.surface,
           border: OutlineInputBorder(
@@ -56,7 +59,10 @@ class _FuelTextFieldState extends State<FuelTextField> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: const BorderSide(color: AppColors.primaryGreen, width: 1),
+            borderSide: const BorderSide(
+              color: AppColors.primaryGreen,
+              width: 1,
+            ),
           ),
         ),
       ),

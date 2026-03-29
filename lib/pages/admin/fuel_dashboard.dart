@@ -35,7 +35,7 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 0,
-            fontSize: 20,
+            fontSize: 23,
           ),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
@@ -92,7 +92,7 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
     Color statusColor = isLow ? AppColors.error : AppColors.primaryGreen;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -209,7 +209,7 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
 
   Widget _buildFilterDropdown() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: AppColors.surface,
