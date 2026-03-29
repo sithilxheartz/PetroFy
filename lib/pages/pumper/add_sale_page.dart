@@ -91,7 +91,7 @@ class _AddSalePageState extends State<AddSalePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-            extendBodyBehindAppBar:
+      extendBodyBehindAppBar:
           true, // Allows content to scroll under the blurred AppBar
       appBar: AppBar(
         title: Column(
@@ -112,144 +112,149 @@ class _AddSalePageState extends State<AddSalePage> {
       body: Stack(
         children: [
           Positioned(
-          top: -50,
-          right: -50,
-          child: Container(
-            width: 200, // Slightly larger for better effect
-            height: 200,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.primaryGreen.withOpacity(0.05), // Increased opacity slightly
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 200, // Slightly larger for better effect
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primaryGreen.withOpacity(
+                  0.05,
+                ), // Increased opacity slightly
+              ),
             ),
           ),
-        ),
-        Container(
-                margin: const EdgeInsets.only(top: 85, bottom: 40),
-        height: double.infinity,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              StreamBuilder<List<FuelTankModel>>(
-                stream: _fuelService.getFuelTanks(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const LinearProgressIndicator(
-                      color: AppColors.primaryGreen,
-                    );
-                  }
+          Container(
+            margin: const EdgeInsets.only(top: 85, bottom: 40),
+            height: double.infinity,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  StreamBuilder<List<FuelTankModel>>(
+                    stream: _fuelService.getFuelTanks(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const LinearProgressIndicator(
+                          color: AppColors.primaryGreen,
+                        );
+                      }
 
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(
-                        color: AppColors.primaryGreen.withOpacity(0.2),
-                      ),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<FuelTankModel>(
-                        hint: const Text("Select Fuel Type"),
-                        value: _selectedTank,
-                        isExpanded: true,
-                        dropdownColor: AppColors.surface,
-                        // FIXED: The map now returns the object, and == handles the rest
-                        items: snapshot.data!.map((tank) {
-                          return DropdownMenuItem<FuelTankModel>(
-                            value: tank,
-                            child: Text(
-                              "${tank.fuelType} (LKR ${tank.fuelPrice}/L)",
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 15,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                            color: AppColors.primaryGreen.withOpacity(0.2),
+                          ),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<FuelTankModel>(
+                            hint: const Text("Select Fuel Type"),
+                            value: _selectedTank,
+                            isExpanded: true,
+                            dropdownColor: AppColors.surface,
+                            // FIXED: The map now returns the object, and == handles the rest
+                            items: snapshot.data!.map((tank) {
+                              return DropdownMenuItem<FuelTankModel>(
+                                value: tank,
+                                child: Text(
+                                  "${tank.fuelType} (LKR ${tank.fuelPrice}/L)",
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              setState(() {
+                                _selectedTank = val;
+                                _calculatePrice(_qtyController.text);
+                              });
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  FuelTextField(
+                    controller: _qtyController,
+                    label: "Sold Quantity (Liters)",
+                    icon: Icons.water_drop_outlined,
+                    onChanged: _calculatePrice,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Digital Receipt Card
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(25),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 20,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryGreen.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(
+                            color: AppColors.primaryGreen.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            const Text(
+                              "TRANSACTION TOTAL",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 2,
+                              ),
                             ),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedTank = val;
-                            _calculatePrice(_qtyController.text);
-                          });
-                        },
+                            const SizedBox(height: 5),
+                            Text(
+                              "LKR ${_totalPrice.toStringAsFixed(2)}",
+                              style: const TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryGreen,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            const Divider(color: Colors.white10),
+                            _buildReceiptRow(
+                              "Rate",
+                              "LKR ${_selectedTank?.fuelPrice ?? 0.00}",
+                            ),
+                            _buildReceiptRow("Status", "Ready for Auth"),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-
-              FuelTextField(
-                controller: _qtyController,
-                label: "Sold Quantity (Liters)",
-                icon: Icons.water_drop_outlined,
-                onChanged: _calculatePrice,
-              ),
-
-              const SizedBox(height: 20),
-
-              // Digital Receipt Card
-              ClipRRect(
-                borderRadius: BorderRadius.circular(25),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryGreen.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(
-                        color: AppColors.primaryGreen.withOpacity(0.2),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          "TRANSACTION TOTAL",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 2,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          "LKR ${_totalPrice.toStringAsFixed(2)}",
-                          style: const TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primaryGreen,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        const Divider(color: Colors.white10),
-                        _buildReceiptRow(
-                          "Rate",
-                          "LKR ${_selectedTank?.fuelPrice ?? 0.00}",
-                        ),
-                        _buildReceiptRow("Status", "Ready for Auth"),
-                      ],
                     ),
                   ),
-                ),
-              ),
 
-              const SizedBox(height: 20),
-              FuelButton(
-                text: "PROCESS TRANSACTION",
-                isLoading: _isLoading,
-                onPressed: _handleProcessSale,
+                  const SizedBox(height: 20),
+                  FuelButton(
+                    text: "PROCESS TRANSACTION",
+                    isLoading: _isLoading,
+                    onPressed: _handleProcessSale,
+                  ),
+                  const SizedBox(height: 100),
+                ],
               ),
-              const SizedBox(height: 100),
-            ],
+            ),
           ),
-        ),
-      ),
         ],
-      )
+      ),
     );
   }
 

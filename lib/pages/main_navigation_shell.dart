@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:petrofy/models/user_model.dart'; // Ensure this import exists
 import 'package:petrofy/pages/admin/add_tank_page.dart';
+import 'package:petrofy/pages/admin/approve_shifts_page.dart';
 import 'package:petrofy/pages/admin/fuel_dashboard.dart';
 import 'package:petrofy/pages/pumper/add_sale_page.dart';
+import 'package:petrofy/pages/pumper/book_shift_page.dart';
 import 'package:petrofy/pages/pumper/profile_page.dart';
 import 'package:petrofy/pages/user_control_page.dart';
 import '../utils/app_colors.dart';
@@ -75,8 +77,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       case 'pumper':
         return [
           const FuelLevelDashboard(),
-          const AddSalePage(),
-          AdminDashboard(), // Or your Sales History page
+         const AddSalePage(),
+         //  const ApproveShiftsPage(),
+          BookShiftPage(user: _currentUser!,), // Or your Sales History page
           PumperProfilePage(user: _currentUser!), // Pass actual user
         ];
       default:
