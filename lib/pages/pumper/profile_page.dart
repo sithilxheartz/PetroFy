@@ -101,7 +101,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
-          "Welcome Back, ${widget.user.firstName}",
+          "Welcome Back, ${widget.user.firstName}!",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 23,

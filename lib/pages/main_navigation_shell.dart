@@ -108,7 +108,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       return const [
         GButton(icon: Icons.local_gas_station_outlined, text: 'Stock'),
         GButton(icon: Icons.add_shopping_cart_outlined, text: 'Sale'),
-        GButton(icon: Icons.history_outlined, text: 'History'),
+        GButton(icon: Icons.history_outlined, text: 'Shift'),
         GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     } else {

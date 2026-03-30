@@ -107,7 +107,7 @@ class _AddSalePageState extends State<AddSalePage> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
-          "DISPENSE FUEL SALES",
+          "DISPENSE FUEL SALE",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23, letterSpacing: 0),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
