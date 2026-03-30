@@ -44,7 +44,7 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
       appBar: AppBar(
         title: const Text(
           "DAILY SHIFT ROSTER",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23, letterSpacing: 0),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
@@ -133,7 +133,7 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(DateFormat('dd MMMM yyyy').format(_selectedDate),
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDim)),
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color.fromARGB(255, 255, 255, 255))),
               const Icon(Icons.calendar_today, size: 18, color: AppColors.primaryGreen),
             ],
           ),
@@ -150,7 +150,7 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
           children: [
             Icon(icon, size: 14, color: AppColors.primaryGreen),
             const SizedBox(width: 8),
-            Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textDim)),
+            Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 255, 255, 255))),
           ],
         ),
         const SizedBox(height: 15),
@@ -188,7 +188,7 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(shift.pumperName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const Text("ACTIVE ASSIGNMENT", style: TextStyle(fontSize: 8, color: AppColors.primaryGreen, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                const Text("VERIFIED FUEL PUMPER", style: TextStyle(fontSize: 8, color: AppColors.primaryGreen, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
               ],
             ),
           ),

@@ -36,18 +36,18 @@ class _AddSalePageState extends State<AddSalePage> {
   }
 
   void _handleProcessSale() async {
-    if (_selectedTank == null || _qtyController.text.isEmpty) {
+    final String rawQty = _qtyController.text.trim();
+    final double enteredQty = double.tryParse(rawQty) ?? 0;
+
+    if (_selectedTank == null || rawQty.isEmpty || enteredQty <= 0) {
       showCustomSnackBar(
         context,
-        "Please select fuel and enter quantity",
+        "Please select fuel and enter a valid quantity",
         isError: true,
       );
       return;
     }
 
-    double enteredQty = double.tryParse(_qtyController.text) ?? 0;
-
-    // Safety Logic: Prevent selling more than available stock
     if (enteredQty > _selectedTank!.currentQuantity) {
       showCustomSnackBar(
         context,
@@ -107,11 +107,12 @@ class _AddSalePageState extends State<AddSalePage> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
-          "DISPENSE FUEL",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
+          "DISPENSE FUEL SALES",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23, letterSpacing: 0),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
+
       ),
       body: Stack(
         children: [
@@ -131,10 +132,12 @@ class _AddSalePageState extends State<AddSalePage> {
 
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 10),
+                  
                   // 1. Fuel Type Selection
                   _buildSectionLabel("SELECT FUEL TYPE"),
                   const SizedBox(height: 10),
@@ -142,22 +145,15 @@ class _AddSalePageState extends State<AddSalePage> {
                     stream: _fuelService.getFuelTanks(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
-                        return const LinearProgressIndicator(
-                          color: AppColors.primaryGreen,
-                        );
+                        return const LinearProgressIndicator(color: AppColors.primaryGreen);
                       }
 
                       return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 15,
-                          vertical: 4,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(15),
-                          border: Border.all(
-                            color: AppColors.primaryGreen.withOpacity(0.2),
-                          ),
+                          border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<FuelTankModel>(
@@ -168,9 +164,7 @@ class _AddSalePageState extends State<AddSalePage> {
                             items: snapshot.data!.map((tank) {
                               return DropdownMenuItem<FuelTankModel>(
                                 value: tank,
-                                child: Text(
-                                  "${tank.fuelType} (LKR ${tank.fuelPrice}/L)",
-                                ),
+                                child: Text("${tank.fuelType} (LKR ${tank.fuelPrice}/L)"),
                               );
                             }).toList(),
                             onChanged: (val) {
@@ -189,25 +183,12 @@ class _AddSalePageState extends State<AddSalePage> {
 
                   // 2. Quantity Input
                   _buildSectionLabel("DISPENSE VOLUME"),
-                  const SizedBox(height: 5),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Container(
-                      child: FuelTextField(
-                        controller: _qtyController,
-                        label: "Quantity in Liters",
-                        icon: Icons.water_drop_outlined,
-                        onChanged: _calculatePrice,
-                        // --- ADD THESE ---
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: [
-                          // This RegExp allows only numbers and ONE decimal point
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                        ],
-                      ),
-                    ),
+                  const SizedBox(height: 10),
+                  FuelNumberField( // Using the specialized numeric widget
+                    controller: _qtyController,
+                    label: "Quantity in Liters",
+                    icon: Icons.water_drop_outlined,
+                    onChanged: _calculatePrice,
                   ),
 
                   const SizedBox(height: 20),
@@ -215,7 +196,7 @@ class _AddSalePageState extends State<AddSalePage> {
                   // 3. Digital Receipt Card with Stock Info
                   _buildReceiptCard(),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height:  20),
 
                   // 4. Action Button
                   FuelButton(
@@ -242,15 +223,14 @@ class _AddSalePageState extends State<AddSalePage> {
         color: AppColors.primaryGreen,
         fontSize: 10,
         fontWeight: FontWeight.bold,
-        letterSpacing: 1.5,
+        letterSpacing: 1,
       ),
     );
   }
 
   Widget _buildReceiptCard() {
     double enteredQty = double.tryParse(_qtyController.text) ?? 0;
-    bool isOverStock =
-        _selectedTank != null && enteredQty > _selectedTank!.currentQuantity;
+    bool isOverStock = _selectedTank != null && enteredQty > _selectedTank!.currentQuantity;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(25),
@@ -258,37 +238,36 @@ class _AddSalePageState extends State<AddSalePage> {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
           decoration: BoxDecoration(
-            color: AppColors.primaryGreen.withOpacity(0.05),
+            color: AppColors.surface.withOpacity(0.5),
             borderRadius: BorderRadius.circular(25),
-            border: Border.all(color: AppColors.primaryGreen.withOpacity(0.2)),
+            border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
           ),
           child: Column(
             children: [
               const Text(
                 "TRANSACTION TOTAL",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.primaryGreen,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 5),
               Text(
                 "LKR ${_totalPrice.toStringAsFixed(2)}",
                 style: const TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primaryGreen,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 15),
               const Divider(color: Colors.white10, thickness: 1),
               const SizedBox(height: 10),
 
-              // NEW: Live Stock Tracking
               _buildReceiptRow(
                 "Available Stock",
                 _selectedTank != null
@@ -300,11 +279,9 @@ class _AddSalePageState extends State<AddSalePage> {
                 "LKR ${_selectedTank?.fuelPrice.toStringAsFixed(2) ?? "0.00"}",
               ),
               _buildReceiptRow(
-                "Auth Status",
+                "System Status",
                 isOverStock ? "Insufficient Stock" : "System Ready",
-                valueColor: isOverStock
-                    ? Colors.redAccent
-                    : AppColors.primaryGreen,
+                valueColor: isOverStock ? Colors.redAccent : AppColors.primaryGreen,
               ),
             ],
           ),
@@ -313,28 +290,14 @@ class _AddSalePageState extends State<AddSalePage> {
     );
   }
 
-  Widget _buildReceiptRow(
-    String label,
-    String value, {
-    Color valueColor = Colors.white,
-  }) {
+  Widget _buildReceiptRow(String label, String value, {Color valueColor = Colors.white70}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(color: AppColors.textDim, fontSize: 12),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-              color: valueColor,
-            ),
-          ),
+          Text(label, style: const TextStyle(color: AppColors.textDim, fontSize: 12)),
+          Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: valueColor)),
         ],
       ),
     );

@@ -79,10 +79,10 @@ class _BookShiftPageState extends State<BookShiftPage> {
                     style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold,),
                   ),
                   const Text(
-                    "Select your shift details below.",
+                    "Select your shift schedule details below.",
                     style: TextStyle(color: AppColors.textDim, fontSize: 12),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
 
                   // 1. DATE SELECTION
                   _buildLabel("SELECT DATE"),
@@ -90,10 +90,10 @@ class _BookShiftPageState extends State<BookShiftPage> {
                   _buildGlassBox(
                     child: ListTile(
                       title: Text(
-                        "${_selectedDate.day} - ${_selectedDate.month} - ${_selectedDate.year}",
+                        "${_selectedDate.day} - 0${_selectedDate.month} - ${_selectedDate.year}",
                         style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                       ),
-                      trailing: const Icon(Icons.calendar_month, color: AppColors.primaryGreen),
+                      trailing: const Icon(Icons.calendar_today, color: AppColors.primaryGreen),
                       onTap: () async {
                         DateTime? picked = await showDatePicker(
                           context: context,
@@ -106,7 +106,7 @@ class _BookShiftPageState extends State<BookShiftPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
 
                   // 2. SHIFT SELECTION (Using Interactive Tiles for "Interest")
                   _buildLabel("SELECT SHIFT DURATION"),
@@ -119,11 +119,11 @@ class _BookShiftPageState extends State<BookShiftPage> {
                     ],
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
 
                   // 3. PUMP NUMBER SELECTION
                   _buildLabel("SELECT PUMP NUMBER"),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 10),
                   _buildGlassDropdown(
                     [
                       "Petrol 01",
@@ -162,7 +162,7 @@ class _BookShiftPageState extends State<BookShiftPage> {
           color: AppColors.primaryGreen,
           fontSize: 10,
           fontWeight: FontWeight.bold,
-          letterSpacing: 1.5,
+          letterSpacing: 1,
         ),
       );
 
@@ -218,7 +218,7 @@ class _BookShiftPageState extends State<BookShiftPage> {
             dropdownColor: AppColors.surface,
             icon: const Padding(
               padding: EdgeInsets.only(right: 15),
-              child: Icon(Icons.unfold_more, color: AppColors.primaryGreen),
+              child: Icon(Icons.arrow_drop_down, color: AppColors.textDim),
             ),
             items: items
                 .map(
@@ -228,7 +228,7 @@ class _BookShiftPageState extends State<BookShiftPage> {
                       padding: const EdgeInsets.only(left: 20),
                       child: Text(
                         e,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        style: const TextStyle(color: Colors.white, fontSize: 15),
                       ),
                     ),
                   ),

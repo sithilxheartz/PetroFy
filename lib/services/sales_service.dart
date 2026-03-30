@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import '../models/fuel_sale_model.dart';
 
 class SalesService {
@@ -34,27 +35,33 @@ class SalesService {
     }
   }
 
-  // FIXED: Corrected .where syntax for pumperId
+  // Get ALL sales for a pumper (Simple Query)
   Stream<List<FuelSaleModel>> getPumperSales(String pumperId) {
     return _firestore
         .collection('fuelSales')
-        .where('pumperId', isEqualTo: pumperId) 
-        .orderBy('dateTime', descending: true) 
+        .where('pumperId', isEqualTo: pumperId)
+        .orderBy('dateTime', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => FuelSaleModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
             .toList());
   }
 
-Stream<List<FuelSaleModel>> getPumperFilteredSales(String pumperId, DateTime startDate) {
-  return _firestore
-      .collection('fuelSales')
-      .where('pumperId', isEqualTo: pumperId)
-      .where('dateTime', isGreaterThanOrEqualTo: startDate)
-      .orderBy('dateTime', descending: true)
-      .snapshots()
-      .map((snapshot) => snapshot.docs
-          .map((doc) => FuelSaleModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
-          .toList());
-}
+  // Get FILTERED sales (Requires Composite Index)
+  Stream<List<FuelSaleModel>> getPumperFilteredSales(String pumperId, DateTime startDate) {
+    return _firestore
+        .collection('fuelSales')
+        .where('pumperId', isEqualTo: pumperId)
+        .where('dateTime', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+        .orderBy('dateTime', descending: true) 
+        .snapshots()
+        .map((snapshot) {
+          // This print will help you verify if data is arriving after the index is ready
+          debugPrint("📊 DATA CHECK: Found ${snapshot.docs.length} records for $pumperId");
+          
+          return snapshot.docs
+              .map((doc) => FuelSaleModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+              .toList();
+        });
+  }
 }

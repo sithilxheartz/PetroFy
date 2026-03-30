@@ -18,7 +18,7 @@ class ShiftService {
           .get();
 
       if (pumpTaken.docs.isNotEmpty) {
-        return "This pump is already assigned to someone else for the ${shift.shiftType} shift.";
+        return "This pump is already assigned to someone else for the ${shift.shiftType}.";
       }
 
       // --- CONSTRAINT 2: Has THIS PUMPER already booked a different pump? ---
@@ -29,7 +29,7 @@ class ShiftService {
           .get();
 
       if (pumperAlreadyBooked.docs.isNotEmpty) {
-        return "You have already reserved a pump for the ${shift.shiftType} shift on this date.";
+        return "You have already reserved a pump for the ${shift.shiftType} on this date.";
       }
 
       // 3. If both checks pass, save the shift as 'accepted'
