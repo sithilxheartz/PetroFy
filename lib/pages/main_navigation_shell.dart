@@ -99,8 +99,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   List<GButton> _buildNavButtons() {
     if (widget.userRole == 'admin' || widget.userRole == 'manager') {
       return const [
-        GButton(icon: Icons.ev_station_outlined, text: 'Inventory'),
-        GButton(icon: Icons.people_outline, text: 'Users'),
+        GButton(icon: Icons.local_gas_station_outlined, text: 'Stock'),
+        GButton(icon: Icons.bar_chart_outlined, text: 'Insights'),
         GButton(icon: Icons.add_circle_outline, text: 'Register'),
         GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
