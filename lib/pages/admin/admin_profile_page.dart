@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:petrofy/home_page.dart';
+import 'package:petrofy/pages/admin/payment_approval_page.dart';
 import 'package:petrofy/pages/admin/price_config_page.dart';
 import 'package:petrofy/pages/admin/user_control_page.dart';
 import '../../models/user_model.dart';
@@ -70,7 +71,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                 children: [
                   _buildAdminHeader(),
                   const SizedBox(height: 30),
-
                   // STATION OVERVIEW STATS
                   _buildSectionLabel("STATION OVERVIEW"),
                   const SizedBox(height: 15),
@@ -82,20 +82,16 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   _buildSectionLabel("SYSTEM MANAGEMENT"),
                   const SizedBox(height: 15),
                   _buildMenuButton(
-                    "Inventory Control",
-                    "Manage fuel levels & tank thresholds",
-                    Icons.storage_rounded,
-                    () => _navigateToPage("Inventory"),
-                  ),
-                  _buildMenuButton(
-                    "User Management",
-                    "Control access for pumpers & managers",
-                    Icons.people_alt_rounded,
+                    "Payment Approvals",
+                    "Verify and safe-keep pumper collections",
+                    Icons.fact_check_outlined,
                     () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const UserManagementPage(),
+                          builder: (context) => PaymentApprovalPage(
+                            adminUser: widget.user,
+                          ), // 👈 Passing the admin data
                         ),
                       );
                     },
@@ -114,10 +110,23 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                     },
                   ),
                   _buildMenuButton(
-                    "Sales Analytics",
-                    "View total history & daily summaries",
-                    Icons.analytics_rounded,
-                    () => _navigateToPage("Analytics"),
+                    "User Management",
+                    "Control access for pumpers & managers",
+                    Icons.people_alt_rounded,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const UserManagementPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
+                    "Inventory Control",
+                    "Manage fuel levels & tank thresholds",
+                    Icons.storage_rounded,
+                    () => _navigateToPage("Inventory"),
                   ),
                   _buildMenuButton(
                     "Shift Scheduling",

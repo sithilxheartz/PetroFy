@@ -13,16 +13,24 @@ class PriceConfigPage extends StatefulWidget {
 
 class _PriceConfigPageState extends State<PriceConfigPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   // Map to store controllers for each fuel tank dynamically
   final Map<String, TextEditingController> _controllers = {};
 
   // --- 1. Confirmation Dialog Logic ---
-  void _confirmPriceChange(String tankId, String fuelType, String newPriceText) {
+  void _confirmPriceChange(
+    String tankId,
+    String fuelType,
+    String newPriceText,
+  ) {
     double? price = double.tryParse(newPriceText);
-    
+
     if (price == null || price <= 0) {
-      showCustomSnackBar(context, "Please enter a valid numeric price", isError: true);
+      showCustomSnackBar(
+        context,
+        "Please enter a valid numeric price",
+        isError: true,
+      );
       return;
     }
 
@@ -39,10 +47,19 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
           ),
           title: Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, color: AppColors.primaryGreen),
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: AppColors.primaryGreen,
+              ),
               const SizedBox(width: 10),
-              const Text("Confirm Price Update", 
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text(
+                "Confirm Price Update",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           content: Text(
@@ -52,22 +69,32 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("CANCEL", style: TextStyle(color: Colors.white38)),
+              child: const Text(
+                "CANCEL",
+                style: TextStyle(color: Colors.white38),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.only(right: 10, bottom: 5),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryGreen,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 5,
                 ),
                 onPressed: () {
                   Navigator.pop(context);
                   _executePriceUpdate(tankId, fuelType, price);
                 },
-                child: const Text("UPDATE NOW", 
-                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "UPDATE NOW",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
@@ -77,20 +104,31 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
   }
 
   // --- 2. Database Execution ---
-  Future<void> _executePriceUpdate(String tankId, String fuelType, double price) async {
+  Future<void> _executePriceUpdate(
+    String tankId,
+    String fuelType,
+    double price,
+  ) async {
     try {
       await _firestore.collection('fuelTanks').doc(tankId).update({
         'fuelPrice': price,
       });
-      
+
       if (mounted) {
-        showCustomSnackBar(context, "Price Updated: $fuelType @ LKR ${price.toStringAsFixed(2)}");
+        showCustomSnackBar(
+          context,
+          "Price Updated: $fuelType @ LKR ${price.toStringAsFixed(2)}",
+        );
         // Remove focus from text field after success
         FocusScope.of(context).unfocus();
       }
     } catch (e) {
       if (mounted) {
-        showCustomSnackBar(context, "Update Failed: ${e.toString()}", isError: true);
+        showCustomSnackBar(
+          context,
+          "Update Failed: ${e.toString()}",
+          isError: true,
+        );
       }
     }
   }
@@ -108,36 +146,58 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text("RATE MANAGEMENT",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 2)),
+        title: const Text(
+          "PRICE CONFIGURATION",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0,
+            fontSize: 23,
+          ),
+        ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
-        centerTitle: true,
       ),
       body: Stack(
         children: [
-          Positioned(top: -50, right: -50, child: _buildGlow()),
-          
+          Positioned(bottom: -60, right: -90, child: _buildGlow()),
+
           StreamBuilder<QuerySnapshot>(
             stream: _firestore.collection('fuelTanks').snapshots(),
             builder: (context, snapshot) {
-              if (snapshot.hasError) return const Center(child: Text("Connection Error", style: TextStyle(color: Colors.white)));
-              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen));
+              if (snapshot.hasError)
+                return const Center(
+                  child: Text(
+                    "Connection Error",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                );
+              if (!snapshot.hasData)
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primaryGreen,
+                  ),
+                );
 
               final tanks = snapshot.data!.docs;
 
               return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 25,
+                  vertical: 15,
+                ),
                 itemCount: tanks.length,
                 itemBuilder: (context, index) {
                   final tank = tanks[index];
                   final String tankId = tank.id;
                   final String fuelType = tank['fuelType'];
-                  final double currentPrice = (tank['fuelPrice'] as num).toDouble();
+                  final double currentPrice = (tank['fuelPrice'] as num)
+                      .toDouble();
 
                   // Maintain controller text consistency
                   if (!_controllers.containsKey(tankId)) {
-                    _controllers[tankId] = TextEditingController(text: currentPrice.toString());
+                    _controllers[tankId] = TextEditingController(
+                      text: currentPrice.toString(),
+                    );
                   }
 
                   return _buildPriceCard(tankId, fuelType, currentPrice);
@@ -152,18 +212,18 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
 
   Widget _buildPriceCard(String id, String type, double currentPrice) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.6),
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        color: AppColors.surface.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, 5),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -172,50 +232,63 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(type, 
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white)),
+              Text(
+                type,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17,
+                  color: Colors.white,
+                ),
+              ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primaryGreen.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primaryGreen.withOpacity(0.2)),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.primaryGreen.withOpacity(0.2),
+                  ),
                 ),
                 child: Text(
                   "LKR ${currentPrice.toStringAsFixed(2)}",
-                  style: const TextStyle(color: AppColors.primaryGreen, fontSize: 11, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: AppColors.primaryGreen,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 15),
           Row(
             children: [
               Expanded(
                 child: FuelNumberField(
                   controller: _controllers[id]!,
                   label: "Set New Rate",
-                  icon: Icons.edit_calendar_rounded,
+                  icon: Icons.price_change,
                 ),
               ),
               const SizedBox(width: 15),
               GestureDetector(
-                onTap: () => _confirmPriceChange(id, type, _controllers[id]!.text),
+                onTap: () =>
+                    _confirmPriceChange(id, type, _controllers[id]!.text),
                 child: Container(
                   height: 55,
                   width: 55,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryGreen,
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryGreen.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      )
-                    ],
+                    color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(15),
+            
                   ),
-                  child: const Icon(Icons.published_with_changes_rounded, color: Colors.black),
+                  child: const Icon(
+                    Icons.published_with_changes_rounded,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ],
@@ -227,8 +300,8 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
 
   Widget _buildGlow() {
     return Container(
-      width: 250,
-      height: 250,
+      width: 300,
+      height: 300,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: AppColors.primaryGreen.withOpacity(0.05),

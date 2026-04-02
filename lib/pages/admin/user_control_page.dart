@@ -14,6 +14,16 @@ class UserManagementPage extends StatefulWidget {
 class _UserManagementPageState extends State<UserManagementPage> {
   final CollectionReference usersCollection =
       FirebaseFirestore.instance.collection('users');
+  
+  // Search Controller
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _updateRole(String userId, String newRole) {
     usersCollection.doc(userId).update({'role': newRole});
@@ -25,40 +35,109 @@ class _UserManagementPageState extends State<UserManagementPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text("USER MANAGEMENT",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.5)),
+        title: const Text(
+          "USER MANAGEMENT",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0,
+            fontSize: 23,
+          ),
+        ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
-        centerTitle: true,
       ),
       body: Stack(
         children: [
-          // Background Glow
-          Positioned(top: -50, left: -50, child: _buildGlow()),
+          Positioned(bottom: -60, right: -90, child: _buildGlow()),
           
-          StreamBuilder<QuerySnapshot>(
-            stream: usersCollection.snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) return const Center(child: Text("Sync Error"));
-              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen));
+          Column(
+            children: [
+              // Search Bar Section
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                child: _buildSearchBar(),
+              ),
 
-              final users = snapshot.data!.docs;
+              Expanded(
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: usersCollection.snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) return const Center(child: Text("Sync Error"));
+                    if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen));
 
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                itemCount: users.length,
-                itemBuilder: (context, index) {
-                  final user = users[index];
-                  String currentRole = user['role'] ?? 'customer';
-                  String email = user['email'] ?? 'No Email';
-                  String name = "${user['firstName'] ?? ''} ${user['lastName'] ?? ''}";
+                    // Filter Logic
+                    final allUsers = snapshot.data!.docs;
+                    final filteredUsers = allUsers.where((doc) {
+                      String firstName = (doc['firstName'] ?? '').toString().toLowerCase();
+                      String lastName = (doc['lastName'] ?? '').toString().toLowerCase();
+                      String email = (doc['email'] ?? '').toString().toLowerCase();
+                      String fullName = "$firstName $lastName";
+                      
+                      return fullName.contains(_searchQuery.toLowerCase()) || 
+                             email.contains(_searchQuery.toLowerCase());
+                    }).toList();
 
-                  return _buildUserCard(user.id, name, email, currentRole);
-                },
-              );
-            },
+                    if (filteredUsers.isEmpty) {
+                      return const Center(
+                        child: Text("No users found", style: TextStyle(color: AppColors.textDim)),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      itemCount: filteredUsers.length,
+                      itemBuilder: (context, index) {
+                        final user = filteredUsers[index];
+                        String currentRole = user['role'] ?? 'customer';
+                        String email = user['email'] ?? 'No Email';
+                        String name = "${user['firstName'] ?? ''} ${user['lastName'] ?? ''}";
+
+                        return _buildUserCard(user.id, name, email, currentRole);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (value) {
+          setState(() {
+            _searchQuery = value;
+          });
+        },
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: "Search by name or email...",
+          hintStyle: const TextStyle(color: AppColors.textDim, fontSize: 14),
+          prefixIcon: const Icon(Icons.search, color: AppColors.primaryGreen),
+          suffixIcon: _searchQuery.isNotEmpty 
+            ? IconButton(
+                icon: const Icon(Icons.clear, color: AppColors.textDim, size: 20),
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {
+                    _searchQuery = "";
+                  });
+                },
+              )
+            : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 15),
+        ),
       ),
     );
   }
@@ -138,8 +217,8 @@ class _UserManagementPageState extends State<UserManagementPage> {
 
   Widget _buildGlow() {
     return Container(
-      width: 200,
-      height: 200,
+      width: 300,
+      height: 300,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: AppColors.primaryGreen.withOpacity(0.05),

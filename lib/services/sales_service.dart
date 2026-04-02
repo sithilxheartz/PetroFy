@@ -11,15 +11,12 @@ class SalesService {
 
   Future<String?> recordSale(FuelSaleModel sale) async {
     try {
-      // 1. Define Document References
       DocumentReference tankRef = _tanksCollection.doc(sale.tankId);
-      
-      // Use the date (yyyy-MM-dd) as the ID so there is only ONE doc per day
       String todayId = DateFormat('yyyy-MM-dd').format(DateTime.now());
       DocumentReference historyRef = _historyCollection.doc(todayId);
 
       return await _firestore.runTransaction((transaction) async {
-        // 2. Get Current Tank Data
+        // 1. Check Tank Stock
         DocumentSnapshot tankSnap = await transaction.get(tankRef);
         if (!tankSnap.exists) return "Error: Tank not found.";
 
@@ -28,21 +25,20 @@ class SalesService {
           return "Insufficient fuel! Remaining: ${currentStock.toStringAsFixed(2)}L";
         }
 
-        // 3. Update Tank Stock
+        // 2. Update Tank Stock
         transaction.update(tankRef, {
           'currentQuantity': currentStock - sale.soldQuantity,
         });
 
-        // 4. Update Daily History (Aggregation)
-        // Map the fuel type to your specific field names
+        // 3. Update Daily Aggregated History
         String fieldName = _getHistoryFieldName(sale.fuelType);
-        
         transaction.set(historyRef, {
           'date': Timestamp.fromDate(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)),
           fieldName: FieldValue.increment(sale.soldQuantity),
-        }, SetOptions(merge: true)); // merge: true creates the doc if it doesn't exist
+        }, SetOptions(merge: true));
 
-        // 5. Save individual transaction record
+        // 4. Save Individual Transaction with NEW STATUS fields
+        // Note: We use sale.toMap() which now includes the 'pending' status
         transaction.set(_salesCollection.doc(), sale.toMap());
 
         return null; // Success
@@ -52,18 +48,56 @@ class SalesService {
     }
   }
 
-  // Helper to map your Fuel Types to the History Document fields
+  // --- ADMIN APPROVAL LOGIC ---
+  
+  /// Call this when an Admin receives cash from a pumper
+  Future<void> approvePayment(String saleId, String adminId, String adminName) async {
+    await _salesCollection.doc(saleId).update({
+      'status': 'payment received',
+      'paymentReceiverId': adminId,
+      'paymentReceiverName': adminName,
+    });
+  }
+
+  /// Call this when the manager puts the money in the physical safe
+  Future<void> moveToSafe(String saleId) async {
+    await _salesCollection.doc(saleId).update({
+      'status': 'added to safe',
+    });
+  }
+
+  /// Updates the status and records which Admin performed the action
+  Future<void> updatePaymentStatus({
+    required String saleId, 
+    required String newStatus, 
+    required String adminId, 
+    required String adminName
+  }) async {
+    try {
+      await _firestore.collection('fuelSales').doc(saleId).update({
+        'status': newStatus,
+        'paymentReceiverId': adminId,
+        'paymentReceiverName': adminName,
+        'approvalTime': FieldValue.serverTimestamp(), // Optional: adds a timestamp of approval
+      });
+    } catch (e) {
+      throw Exception("Failed to update status: $e");
+    }
+  }
+
+  // Helper mapping
   String _getHistoryFieldName(String fuelType) {
     switch (fuelType) {
       case 'Auto Diesel': return 'dieselSale';
       case 'Super Diesel': return 'superDieselSale';
-      case '92 Petrol': return '92PetrolSale';
-      case '95 Petrol': return '95PetrolSale';
+      case 'Petrol 92 Octane': return '92PetrolSale';
+      case 'Petrol 95 Octane': return '95PetrolSale';
       default: return 'otherSale';
     }
   }
 
-  // Get ALL sales for a pumper (Simple Query)
+  // --- QUERY METHODS ---
+
   Stream<List<FuelSaleModel>> getPumperSales(String pumperId) {
     return _firestore
         .collection('fuelSales')
@@ -75,7 +109,6 @@ class SalesService {
             .toList());
   }
 
-  // Get FILTERED sales (Requires Composite Index)
   Stream<List<FuelSaleModel>> getPumperFilteredSales(String pumperId, DateTime startDate) {
     return _firestore
         .collection('fuelSales')
@@ -83,13 +116,8 @@ class SalesService {
         .where('dateTime', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
         .orderBy('dateTime', descending: true) 
         .snapshots()
-        .map((snapshot) {
-          // This print will help you verify if data is arriving after the index is ready
-          debugPrint("📊 DATA CHECK: Found ${snapshot.docs.length} records for $pumperId");
-          
-          return snapshot.docs
+        .map((snapshot) => snapshot.docs
               .map((doc) => FuelSaleModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
-              .toList();
-        });
+              .toList());
   }
 }

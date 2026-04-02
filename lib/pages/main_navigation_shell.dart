@@ -8,6 +8,7 @@ import 'package:petrofy/pages/admin/add_tank_page.dart';
 import 'package:petrofy/pages/admin/admin_profile_page.dart';
 import 'package:petrofy/pages/admin/approve_shifts_page.dart';
 import 'package:petrofy/pages/admin/fuel_dashboard.dart';
+import 'package:petrofy/pages/admin/payment_approval_page.dart';
 import 'package:petrofy/pages/pumper/add_sale_page.dart';
 import 'package:petrofy/pages/pumper/book_shift_page.dart';
 import 'package:petrofy/pages/pumper/profile_page.dart';
@@ -76,7 +77,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         return [
           const FuelLevelDashboard(),
           UserManagementPage(),
-          const AddTankPage(),
+          FuelLevelDashboard(),
           AdminProfilePage(user: _currentUser!), // Pass actual user
         ];
       case 'pumper':
@@ -102,7 +103,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       return const [
         GButton(icon: Icons.local_gas_station_outlined, text: 'Stock'),
         GButton(icon: Icons.bar_chart_outlined, text: 'Insights'),
-        GButton(icon: Icons.add_circle_outline, text: 'Register'),
+        GButton(icon: Icons.cabin_sharp, text: 'Register'),
         GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     } else if (widget.userRole == 'pumper') {
