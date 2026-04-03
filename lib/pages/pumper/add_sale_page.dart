@@ -108,11 +108,14 @@ class _AddSalePageState extends State<AddSalePage> {
       appBar: AppBar(
         title: const Text(
           "DISPENSE FUEL SALE",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23, letterSpacing: 0),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 21,
+            letterSpacing: 0,
+          ),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
-
       ),
       body: Stack(
         children: [
@@ -137,7 +140,7 @@ class _AddSalePageState extends State<AddSalePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10),
-                  
+
                   // 1. Fuel Type Selection
                   _buildSectionLabel("SELECT FUEL TYPE"),
                   const SizedBox(height: 10),
@@ -145,15 +148,23 @@ class _AddSalePageState extends State<AddSalePage> {
                     stream: _fuelService.getFuelTanks(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
-                        return const LinearProgressIndicator(color: AppColors.primaryGreen);
+                        return const LinearProgressIndicator(
+                          color: AppColors.primaryGreen,
+                        );
                       }
 
                       return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 15,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(15),
-                          border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
+                          border: Border.all(
+                            color: AppColors.primaryGreen.withOpacity(0.1),
+                            width: 1.5,
+                          ),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<FuelTankModel>(
@@ -164,7 +175,9 @@ class _AddSalePageState extends State<AddSalePage> {
                             items: snapshot.data!.map((tank) {
                               return DropdownMenuItem<FuelTankModel>(
                                 value: tank,
-                                child: Text("${tank.fuelType} (LKR ${tank.fuelPrice}/L)"),
+                                child: Text(
+                                  "${tank.fuelType} (LKR ${tank.fuelPrice}/L)",
+                                ),
                               );
                             }).toList(),
                             onChanged: (val) {
@@ -184,7 +197,8 @@ class _AddSalePageState extends State<AddSalePage> {
                   // 2. Quantity Input
                   _buildSectionLabel("DISPENSE VOLUME"),
                   const SizedBox(height: 10),
-                  FuelNumberField( // Using the specialized numeric widget
+                  FuelNumberField(
+                    // Using the specialized numeric widget
                     controller: _qtyController,
                     label: "Quantity in Liters",
                     icon: Icons.water_drop_outlined,
@@ -196,7 +210,7 @@ class _AddSalePageState extends State<AddSalePage> {
                   // 3. Digital Receipt Card with Stock Info
                   _buildReceiptCard(),
 
-                  const SizedBox(height:  20),
+                  const SizedBox(height: 20),
 
                   // 4. Action Button
                   FuelButton(
@@ -230,7 +244,8 @@ class _AddSalePageState extends State<AddSalePage> {
 
   Widget _buildReceiptCard() {
     double enteredQty = double.tryParse(_qtyController.text) ?? 0;
-    bool isOverStock = _selectedTank != null && enteredQty > _selectedTank!.currentQuantity;
+    bool isOverStock =
+        _selectedTank != null && enteredQty > _selectedTank!.currentQuantity;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(25),
@@ -242,7 +257,10 @@ class _AddSalePageState extends State<AddSalePage> {
           decoration: BoxDecoration(
             color: AppColors.surface.withOpacity(0.5),
             borderRadius: BorderRadius.circular(25),
-            border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
+            border: Border.all(
+              color: AppColors.primaryGreen.withOpacity(0.1),
+              width: 1.5,
+            ),
           ),
           child: Column(
             children: [
@@ -281,7 +299,9 @@ class _AddSalePageState extends State<AddSalePage> {
               _buildReceiptRow(
                 "System Status",
                 isOverStock ? "Insufficient Stock" : "System Ready",
-                valueColor: isOverStock ? Colors.redAccent : AppColors.primaryGreen,
+                valueColor: isOverStock
+                    ? Colors.redAccent
+                    : AppColors.primaryGreen,
               ),
             ],
           ),
@@ -290,14 +310,28 @@ class _AddSalePageState extends State<AddSalePage> {
     );
   }
 
-  Widget _buildReceiptRow(String label, String value, {Color valueColor = Colors.white70}) {
+  Widget _buildReceiptRow(
+    String label,
+    String value, {
+    Color valueColor = Colors.white70,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textDim, fontSize: 12)),
-          Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: valueColor)),
+          Text(
+            label,
+            style: const TextStyle(color: AppColors.textDim, fontSize: 12),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: valueColor,
+            ),
+          ),
         ],
       ),
     );

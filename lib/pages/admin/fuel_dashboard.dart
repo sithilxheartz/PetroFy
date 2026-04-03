@@ -35,7 +35,7 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 0,
-            fontSize: 23,
+            fontSize: 21,
           ),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),

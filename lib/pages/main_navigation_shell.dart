@@ -72,7 +72,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       case 'manager':
         return [
           const FuelLevelDashboard(),
-          const FuelLevelDashboard(),
+          const AddSalePage(),
           AddOrderPage(adminUser: _currentUser!),
           AdminProfilePage(user: _currentUser!), // Pass actual user
         ];

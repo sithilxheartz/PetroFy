@@ -1,9 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:petrofy/home_page.dart';
+import 'package:petrofy/pages/admin/add_lubricant_page.dart';
 import 'package:petrofy/pages/admin/payment_approval_page.dart';
 import 'package:petrofy/pages/admin/price_config_page.dart';
 import 'package:petrofy/pages/admin/user_control_page.dart';
+import 'package:petrofy/services/cloudinary_service.dart';
+import 'package:petrofy/widgets/custom_components.dart';
 import '../../models/user_model.dart';
 import '../../utils/app_colors.dart';
 
@@ -39,7 +43,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
           body: Center(
             child: Text(
               "$title Module Coming Soon",
-              style: const TextStyle(color: Colors.white60),
+              style: const TextStyle(color: Colors.white60, fontSize: 21),
             ),
           ),
         ),
@@ -55,7 +59,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
       appBar: AppBar(
         title: Text(
           "Welcome Back, ${widget.user.firstName}!",
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 21),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
@@ -72,11 +76,11 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   _buildAdminHeader(),
                   const SizedBox(height: 20),
                   // STATION OVERVIEW STATS
-                  _buildSectionLabel("STATION OVERVIEW"),
-                  const SizedBox(height: 15),
-                  _buildLiveStationStats(),
+                  //   _buildSectionLabel("STATION OVERVIEW"),
+                  //  const SizedBox(height: 15),
+                  // _buildLiveStationStats(),
 
-                  const SizedBox(height: 15),
+                  // const SizedBox(height: 15),
 
                   // SYSTEM MANAGEMENT MENU
                   _buildSectionLabel("STATION MANAGEMENT"),
@@ -109,20 +113,26 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                       );
                     },
                   ),
+                  _buildMenuButton(
+                    "Inventory Control",
+                    "Manage fuel levels & tank thresholds",
+                    Icons.storage_rounded,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AddLubricantPage(),
+                        ),
+                      );
+                    },
+                  ),
 
-             //     _buildMenuButton(
-              //      "Inventory Control",
-              //      "Manage fuel levels & tank thresholds",
-               //     Icons.storage_rounded,
-               //     () => _navigateToPage("Inventory"),
-               //   ),
-              //    _buildMenuButton(
-              //      "Shift Scheduling",
-              //      "Assign staff to specific pumps",
-              //      Icons.calendar_month_rounded,
-              //      () => _navigateToPage("Shifts"),
-               //   ),
-
+                  //    _buildMenuButton(
+                  //      "Shift Scheduling",
+                  //      "Assign staff to specific pumps",
+                  //      Icons.calendar_month_rounded,
+                  //      () => _navigateToPage("Shifts"),
+                  //   ),
                   const SizedBox(height: 5),
                   _buildSectionLabel("SYSTEM MANAGEMENT"),
                   const SizedBox(height: 15),
@@ -140,12 +150,18 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                       );
                     },
                   ),
-                 // _buildMenuButton(
-                //    "System Settings",
-                 //   "Configure cloud sync & notifications",
-                //    Icons.settings_suggest_rounded,
-                //    () => _navigateToPage("Settings"),
-               //   ),
+                                    _buildMenuButton(
+                    "Update Profile Image",
+                    "Sync your identification photo",
+                    Icons.cloud_upload_outlined,
+                    _handleImageUpload, // Connected to image upload logic
+                  ),
+                  // _buildMenuButton(
+                  //    "System Settings",
+                  //   "Configure cloud sync & notifications",
+                  //    Icons.settings_suggest_rounded,
+                  //    () => _navigateToPage("Settings"),
+                  //   ),
                   const SizedBox(height: 10),
                 ],
               ),
@@ -156,6 +172,29 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     );
   }
 
+  // --- IMAGE UPLOAD LOGIC ---
+  Future<void> _handleImageUpload() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+    );
+
+    if (image != null && mounted) {
+      setState(() => _isUploading = true);
+      String? url = await CloudinaryService().uploadProfileImage(image);
+
+      if (url != null && mounted) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.user.uid)
+            .update({'profilePic': url});
+        setState(() => _displayImage = url);
+        showCustomSnackBar(context, "Cloud Sync Complete");
+      }
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
   // --- UI COMPONENTS ---
 
   Widget _buildAdminHeader() {
@@ -333,7 +372,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
       height: 250,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.primaryGreen.withOpacity(0.03),
+        color: AppColors.primaryGreen.withOpacity(0.05),
       ),
     );
   }

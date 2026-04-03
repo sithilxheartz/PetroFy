@@ -152,7 +152,7 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 0,
-            fontSize: 23,
+            fontSize: 21,
           ),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
@@ -253,16 +253,16 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  color:AppColors.primaryGreen.withOpacity(0),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppColors.primaryGreen.withOpacity(0.2),
+                    color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.2),
                   ),
                 ),
                 child: Text(
                   "LKR ${currentPrice.toStringAsFixed(2)}",
                   style: const TextStyle(
-                    color: AppColors.primaryGreen,
+                    color: Color.fromARGB(255, 255, 255, 255),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -292,7 +292,7 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: const Icon(
-                    Icons.published_with_changes_rounded,
+                    Icons.done_all_rounded,
                     color: Colors.black,
                   ),
                 ),

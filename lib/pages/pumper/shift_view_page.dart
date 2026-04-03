@@ -44,7 +44,7 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
       appBar: AppBar(
         title: const Text(
           "SHIFT ROSTER",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23, letterSpacing: 0),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21, letterSpacing: 0),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,

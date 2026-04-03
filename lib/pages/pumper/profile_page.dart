@@ -104,7 +104,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
           "Welcome Back, ${widget.user.firstName}!",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 23,
+            fontSize: 21,
             letterSpacing: 0,
           ),
         ),

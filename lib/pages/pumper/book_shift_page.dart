@@ -76,7 +76,7 @@ class _BookShiftPageState extends State<BookShiftPage> {
                 children: [
                   const Text(
                     "RESERVE YOUR SHIFT",
-                    style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold,),
+                    style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold,),
                   ),
                   const Text(
                     "Select your shift schedule details below.",

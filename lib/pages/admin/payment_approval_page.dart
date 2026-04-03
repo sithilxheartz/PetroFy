@@ -60,7 +60,7 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 0,
-            fontSize: 23,
+            fontSize: 21,
           ),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
@@ -140,7 +140,8 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
         color: AppColors.surface.withOpacity(0.5),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: _getStatusColor(status).withOpacity(0.1),
+       //   color: _getStatusColor(status).withOpacity(0.1),
+          color: AppColors.primaryGreen.withOpacity(0.1),
           width: 1.5,
         ),
       ),
@@ -212,7 +213,7 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
                   if (status == 'pending')
                     _actionButton(
                       "CASH RECEIVED",
-                      Colors.blue,
+                      AppColors.primaryGreen,
                       () => _updatePaymentStatus(id, 'payment received'),
                     ),
                   if (status == 'payment received')
@@ -290,8 +291,8 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
   }
 
   Color _getStatusColor(String status) {
-    if (status == 'pending') return Colors.orange;
-    if (status == 'payment received') return Colors.blue;
+    if (status == 'pending') return Colors.red;
+    if (status == 'payment received') return AppColors.primaryGreen;
     return AppColors.primaryGreen;
   }
 

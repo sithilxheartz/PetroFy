@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:petrofy/pages/admin/order_history_popup_page.dart';
 import '../../models/fuel_order_model.dart';
 import '../../models/user_model.dart';
@@ -80,7 +81,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
           "NEW FUEL ORDER",
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 23,
+                  fontSize: 21,
             letterSpacing: 0,
           ),
         ),
@@ -94,7 +95,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
               width: 155,
               height: 35,
               child: TextButton.icon(
-              onPressed: _showHistoryPopup,
+                onPressed: _showHistoryPopup,
                 icon: const Icon(
                   Icons.receipt_outlined,
                   color: Colors.white,
@@ -287,12 +288,12 @@ class _AddOrderPageState extends State<AddOrderPage> {
                       "TANK STATUS: $_selectedFuel",
                       style: const TextStyle(
                         color: AppColors.primaryGreen,
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1,
                       ),
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 2),
                     Text(
                       "Available Space: ${_availableSpace.toStringAsFixed(0)} L",
                       style: const TextStyle(
@@ -320,8 +321,8 @@ class _AddOrderPageState extends State<AddOrderPage> {
 
   Widget _buildSimpleGauge(double percent) {
     return Container(
-      width: 50,
-      height: 50,
+      width: 55,
+      height: 55,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -376,10 +377,10 @@ class _AddOrderPageState extends State<AddOrderPage> {
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white54, fontSize: 13),
+        hintStyle: const TextStyle(color: Colors.white54),
         prefixIcon: Icon(
           icon,
           color: isError ? Colors.redAccent : AppColors.primaryGreen,
@@ -393,7 +394,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
             width: 1.5,
             color: isError
                 ? Colors.redAccent
-                : AppColors.primaryGreen.withOpacity(0.1),
+                : const Color.fromARGB(255, 255, 255, 255).withOpacity(0.1),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -405,27 +406,44 @@ class _AddOrderPageState extends State<AddOrderPage> {
       ),
     );
   }
+
   void _showHistoryPopup() {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) => Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: const BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 15),
+              width: 45,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.white12,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            const Text(
+              "FUEL ORDER HISTORY",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+                color: AppColors.primaryGreen,
+                fontSize: 14,
+              ),
+            ),
+            const Expanded(child: OrderHistoryPopup()), // 👈 Your new widget
+          ],
+        ),
       ),
-      child: Column(
-        children: [
-          Container(margin: const EdgeInsets.symmetric(vertical: 15), width: 45, height: 5, decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(10))),
-          const Text("FUEL ORDER HISTORY", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2, color: AppColors.primaryGreen, fontSize: 14)),
-          const Expanded(child: OrderHistoryPopup()), // 👈 Your new widget
-        ],
-      ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildDropdown() {
     return Container(
@@ -434,16 +452,17 @@ class _AddOrderPageState extends State<AddOrderPage> {
         color: AppColors.background,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: AppColors.primaryGreen.withOpacity(0.1),
+          color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.1),
           width: 1.5,
         ),
       ),
       child: DropdownButtonFormField<String>(
         value: _selectedFuel,
         dropdownColor: AppColors.surface,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 14,
+       //   fontSize: 14,
+               fontFamily: GoogleFonts.poppins().fontFamily,
           fontWeight: FontWeight.w500,
         ),
         decoration: const InputDecoration(border: InputBorder.none),
