@@ -145,6 +145,7 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
           "PRICE CONFIGURATION",
@@ -159,51 +160,54 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
       ),
       body: Stack(
         children: [
-          Positioned(bottom: -60, right: -90, child: _buildGlow()),
+          Positioned(top: -50, right: -50, child: _buildGlow()),
+          Positioned(bottom: -50, left: -50, child: _buildGlow()),
 
-          StreamBuilder<QuerySnapshot>(
-            stream: _firestore.collection('fuelTanks').snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError)
-                return const Center(
-                  child: Text(
-                    "Connection Error",
-                    style: TextStyle(color: Colors.white),
+          SafeArea(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _firestore.collection('fuelTanks').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError)
+                  return const Center(
+                    child: Text(
+                      "Connection Error",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+                if (!snapshot.hasData)
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryGreen,
+                    ),
+                  );
+
+                final tanks = snapshot.data!.docs;
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 15,
                   ),
+                  itemCount: tanks.length,
+                  itemBuilder: (context, index) {
+                    final tank = tanks[index];
+                    final String tankId = tank.id;
+                    final String fuelType = tank['fuelType'];
+                    final double currentPrice = (tank['fuelPrice'] as num)
+                        .toDouble();
+
+                    // Maintain controller text consistency
+                    if (!_controllers.containsKey(tankId)) {
+                      _controllers[tankId] = TextEditingController(
+                        text: currentPrice.toString(),
+                      );
+                    }
+
+                    return _buildPriceCard(tankId, fuelType, currentPrice);
+                  },
                 );
-              if (!snapshot.hasData)
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primaryGreen,
-                  ),
-                );
-
-              final tanks = snapshot.data!.docs;
-
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 25,
-                  vertical: 15,
-                ),
-                itemCount: tanks.length,
-                itemBuilder: (context, index) {
-                  final tank = tanks[index];
-                  final String tankId = tank.id;
-                  final String fuelType = tank['fuelType'];
-                  final double currentPrice = (tank['fuelPrice'] as num)
-                      .toDouble();
-
-                  // Maintain controller text consistency
-                  if (!_controllers.containsKey(tankId)) {
-                    _controllers[tankId] = TextEditingController(
-                      text: currentPrice.toString(),
-                    );
-                  }
-
-                  return _buildPriceCard(tankId, fuelType, currentPrice);
-                },
-              );
-            },
+              },
+            ),
           ),
         ],
       ),
@@ -215,9 +219,12 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.3),
+        color: AppColors.surface.withOpacity(0.5),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1)),
+        border: Border.all(
+          color: AppColors.primaryGreen.withOpacity(0.1),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -281,9 +288,8 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
                   height: 55,
                   width: 55,
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.9),
+                    color: AppColors.primaryGreen.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(15),
-            
                   ),
                   child: const Icon(
                     Icons.published_with_changes_rounded,
@@ -300,8 +306,8 @@ class _PriceConfigPageState extends State<PriceConfigPage> {
 
   Widget _buildGlow() {
     return Container(
-      width: 300,
-      height: 300,
+      width: 250,
+      height: 250,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: AppColors.primaryGreen.withOpacity(0.05),

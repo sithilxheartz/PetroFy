@@ -4,16 +4,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:petrofy/models/user_model.dart'; // Ensure this import exists
-import 'package:petrofy/pages/admin/add_tank_page.dart';
+import 'package:petrofy/pages/admin/add_order_page.dart';
 import 'package:petrofy/pages/admin/admin_profile_page.dart';
-import 'package:petrofy/pages/admin/approve_shifts_page.dart';
 import 'package:petrofy/pages/admin/fuel_dashboard.dart';
-import 'package:petrofy/pages/admin/payment_approval_page.dart';
 import 'package:petrofy/pages/pumper/add_sale_page.dart';
-import 'package:petrofy/pages/pumper/book_shift_page.dart';
 import 'package:petrofy/pages/pumper/profile_page.dart';
 import 'package:petrofy/pages/pumper/shift_view_page.dart';
-import 'package:petrofy/pages/admin/user_control_page.dart';
 import '../utils/app_colors.dart';
 
 class MainNavigationShell extends StatefulWidget {
@@ -76,15 +72,14 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       case 'manager':
         return [
           const FuelLevelDashboard(),
-          UserManagementPage(),
-          FuelLevelDashboard(),
+          const FuelLevelDashboard(),
+          AddOrderPage(adminUser: _currentUser!),
           AdminProfilePage(user: _currentUser!), // Pass actual user
         ];
       case 'pumper':
         return [
           const FuelLevelDashboard(),
           const AddSalePage(),
-          //  const ApproveShiftsPage(),
           ShiftViewPage(user: _currentUser!), // Pass actual user
           PumperProfilePage(user: _currentUser!),
         ];
@@ -103,14 +98,14 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       return const [
         GButton(icon: Icons.local_gas_station_outlined, text: 'Stock'),
         GButton(icon: Icons.bar_chart_outlined, text: 'Insights'),
-        GButton(icon: Icons.cabin_sharp, text: 'Register'),
+        GButton(icon: Icons.add_circle_outline, text: 'Orders'),
         GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     } else if (widget.userRole == 'pumper') {
       return const [
         GButton(icon: Icons.local_gas_station_outlined, text: 'Stock'),
-        GButton(icon: Icons.add_shopping_cart_outlined, text: 'Sale'),
-        GButton(icon: Icons.history_outlined, text: 'Shift'),
+        GButton(icon: Icons.add_shopping_cart_outlined, text: 'Sales'),
+        GButton(icon: Icons.history_outlined, text: 'Shifts'),
         GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     } else {
@@ -142,13 +137,13 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
               color: AppColors.primaryGreen.withOpacity(0.2),
               width: 1.5,
             ),
-        //    boxShadow: [
-          //    BoxShadow(
-          //      color: AppColors.primaryGreen.withOpacity(0.1),
-          //      blurRadius: 20,
-          //      spreadRadius: 2,
-          //    ),
-         //   ],
+            //    boxShadow: [
+            //    BoxShadow(
+            //      color: AppColors.primaryGreen.withOpacity(0.1),
+            //      blurRadius: 20,
+            //      spreadRadius: 2,
+            //    ),
+            //   ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(30),

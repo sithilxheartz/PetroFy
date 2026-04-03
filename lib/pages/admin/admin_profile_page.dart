@@ -53,9 +53,9 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
       backgroundColor: AppColors.background,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
-          "Admin Console",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+        title: Text(
+          "Welcome Back, ${widget.user.firstName}!",
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
@@ -70,16 +70,16 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
               child: Column(
                 children: [
                   _buildAdminHeader(),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
                   // STATION OVERVIEW STATS
                   _buildSectionLabel("STATION OVERVIEW"),
                   const SizedBox(height: 15),
                   _buildLiveStationStats(),
 
-                  const SizedBox(height: 35),
+                  const SizedBox(height: 15),
 
                   // SYSTEM MANAGEMENT MENU
-                  _buildSectionLabel("SYSTEM MANAGEMENT"),
+                  _buildSectionLabel("STATION MANAGEMENT"),
                   const SizedBox(height: 15),
                   _buildMenuButton(
                     "Payment Approvals",
@@ -109,6 +109,24 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                       );
                     },
                   ),
+
+             //     _buildMenuButton(
+              //      "Inventory Control",
+              //      "Manage fuel levels & tank thresholds",
+               //     Icons.storage_rounded,
+               //     () => _navigateToPage("Inventory"),
+               //   ),
+              //    _buildMenuButton(
+              //      "Shift Scheduling",
+              //      "Assign staff to specific pumps",
+              //      Icons.calendar_month_rounded,
+              //      () => _navigateToPage("Shifts"),
+               //   ),
+
+                  const SizedBox(height: 5),
+                  _buildSectionLabel("SYSTEM MANAGEMENT"),
+                  const SizedBox(height: 15),
+
                   _buildMenuButton(
                     "User Management",
                     "Control access for pumpers & managers",
@@ -122,27 +140,13 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                       );
                     },
                   ),
-                  _buildMenuButton(
-                    "Inventory Control",
-                    "Manage fuel levels & tank thresholds",
-                    Icons.storage_rounded,
-                    () => _navigateToPage("Inventory"),
-                  ),
-                  _buildMenuButton(
-                    "Shift Scheduling",
-                    "Assign staff to specific pumps",
-                    Icons.calendar_month_rounded,
-                    () => _navigateToPage("Shifts"),
-                  ),
-
-                  const SizedBox(height: 20),
-                  _buildMenuButton(
-                    "System Settings",
-                    "Configure cloud sync & notifications",
-                    Icons.settings_suggest_rounded,
-                    () => _navigateToPage("Settings"),
-                  ),
-                  const SizedBox(height: 50),
+                 // _buildMenuButton(
+                //    "System Settings",
+                 //   "Configure cloud sync & notifications",
+                //    Icons.settings_suggest_rounded,
+                //    () => _navigateToPage("Settings"),
+               //   ),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
@@ -160,7 +164,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
         _buildAvatarSection(),
         const SizedBox(height: 15),
         Text(
-          "${widget.user.firstName} (Administrator)",
+          "${widget.user.firstName} ${widget.user.lastName}",
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         Text(
@@ -183,13 +187,13 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
           children: [
             _buildStatTile(
               "STATION REVENUE",
-              "LKR 145,200",
+              "LKR XXX,XXX",
               Icons.payments_rounded,
             ),
             const SizedBox(width: 15),
             _buildStatTile(
               "TANK STATUS",
-              "65% Healthy",
+              "XX% Healthy",
               Icons.ev_station_rounded,
             ),
           ],

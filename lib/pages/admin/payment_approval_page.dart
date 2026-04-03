@@ -35,9 +35,10 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
       await FirebaseFirestore.instance.collection('fuelSales').doc(docId).update({
         'status': nextStatus,
         'paymentReceiverId': widget.adminUser.uid, // Current Admin UID
-        'paymentReceiverName': "${widget.adminUser.firstName} ${widget.adminUser.lastName}", // Current Admin Name
+        'paymentReceiverName':
+            "${widget.adminUser.firstName} ${widget.adminUser.lastName}", // Current Admin Name
       });
-      
+
       if (mounted) {
         showCustomSnackBar(context, "Transaction marked as $nextStatus");
       }
@@ -52,6 +53,7 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
           "PAYMENT VERIFICATION",
@@ -67,53 +69,80 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
       body: Stack(
         children: [
           // Subtle background glow
-          Positioned(bottom: -60, right: -90, child: _buildGlow()),
-          
-          StreamBuilder<QuerySnapshot>(
-            stream: _approvalStream,
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return Center(child: Text("Error: ${snapshot.error}", style: const TextStyle(color: Colors.redAccent)));
-              }
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen));
-              }
+          Positioned(top: -50, right: -50, child: _buildGlow()),
+          Positioned(bottom: -50, left: -50, child: _buildGlow()),
 
-              final docs = snapshot.data?.docs ?? [];
-              if (docs.isEmpty) {
-                return const Center(
-                  child: Text("No pending payments found", style: TextStyle(color: AppColors.textDim)),
+          SafeArea(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _approvalStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      "Error: ${snapshot.error}",
+                      style: const TextStyle(color: Colors.redAccent),
+                    ),
+                  );
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryGreen,
+                    ),
+                  );
+                }
+
+                final docs = snapshot.data?.docs ?? [];
+                if (docs.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      "No pending payments found",
+                      style: TextStyle(color: AppColors.textDim),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 15,
+                  ),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final data = docs[index].data() as Map<String, dynamic>;
+                    final String id = docs[index].id;
+                    final String status = data['status'] ?? 'pending';
+                    final DateTime date = (data['dateTime'] as Timestamp)
+                        .toDate();
+
+                    return _buildApprovalCard(id, data, status, date);
+                  },
                 );
-              }
-
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                physics: const BouncingScrollPhysics(),
-                itemCount: docs.length,
-                itemBuilder: (context, index) {
-                  final data = docs[index].data() as Map<String, dynamic>;
-                  final String id = docs[index].id;
-                  final String status = data['status'] ?? 'pending';
-                  final DateTime date = (data['dateTime'] as Timestamp).toDate();
-
-                  return _buildApprovalCard(id, data, status, date);
-                },
-              );
-            },
+              },
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildApprovalCard(String id, Map<String, dynamic> data, String status, DateTime date) {
+  Widget _buildApprovalCard(
+    String id,
+    Map<String, dynamic> data,
+    String status,
+    DateTime date,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: _getStatusColor(status).withOpacity(0.1)),
+        color: AppColors.surface.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: _getStatusColor(status).withOpacity(0.1),
+          width: 1.5,
+        ),
       ),
       child: Column(
         children: [
@@ -124,17 +153,33 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(data['fuelType'] ?? 'N/A', 
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                  Text(DateFormat('dd MMM | hh:mm a').format(date), 
-                    style: const TextStyle(color: AppColors.textDim, fontSize: 12)),
+                  Text(
+                    data['fuelType'] ?? 'N/A',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  Text(
+                    DateFormat('dd MMM | hh:mm a').format(date),
+                    style: const TextStyle(
+                      color: AppColors.textDim,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
-              Text("LKR ${data['soldTotalPrice']}", 
-                style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w900, fontSize: 20)),
+              Text(
+                "LKR ${data['soldTotalPrice']}",
+                style: const TextStyle(
+                  color: AppColors.primaryGreen,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
+                ),
+              ),
             ],
           ),
-          
+
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 5),
             child: Divider(color: Colors.white10, thickness: 1),
@@ -143,9 +188,15 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
           // Middle Row: Pumper & Quantity Details
           Row(
             children: [
-              _buildIconDetail(Icons.person_pin_rounded, data['pumperName'] ?? 'Unknown'),
+              _buildIconDetail(
+                Icons.person_pin_rounded,
+                data['pumperName'] ?? 'Unknown',
+              ),
               const SizedBox(width: 25),
-              _buildIconDetail(Icons.local_gas_station_rounded, "${data['soldQuantity']} L"),
+              _buildIconDetail(
+                Icons.local_gas_station_rounded,
+                "${data['soldQuantity']} L",
+              ),
             ],
           ),
 
@@ -159,9 +210,17 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
               Row(
                 children: [
                   if (status == 'pending')
-                    _actionButton("CASH RECEIVED", Colors.blue, () => _updatePaymentStatus(id, 'payment received')),
+                    _actionButton(
+                      "CASH RECEIVED",
+                      Colors.blue,
+                      () => _updatePaymentStatus(id, 'payment received'),
+                    ),
                   if (status == 'payment received')
-                    _actionButton("ADDED TO SAFE", Colors.white, () => _updatePaymentStatus(id, 'added to safe')),
+                    _actionButton(
+                      "ADDED TO SAFE",
+                      Colors.white,
+                      () => _updatePaymentStatus(id, 'added to safe'),
+                    ),
                 ],
               ),
             ],
@@ -176,7 +235,14 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
       children: [
         Icon(icon, color: AppColors.primaryGreen, size: 14),
         const SizedBox(width: 8),
-        Text(text, style: const TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w500)),
+        Text(
+          text,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
@@ -185,9 +251,19 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
     Color color = _getStatusColor(status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(5)),
-      child: Text(status.toUpperCase(), 
-        style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1,
+        ),
+      ),
     );
   }
 
@@ -199,11 +275,16 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
           backgroundColor: color,
           foregroundColor: Colors.black,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 15),
         ),
         onPressed: onTap,
-        child: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
@@ -216,8 +297,12 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
 
   Widget _buildGlow() {
     return Container(
-      width: 300, height: 300, 
-      decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primaryGreen.withOpacity(0.05))
+      width: 250,
+      height: 250,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.primaryGreen.withOpacity(0.05),
+      ),
     );
   }
 }
