@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../models/lubricant_model.dart';
 import '../../services/cloudinary_service.dart';
@@ -31,8 +32,9 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
   File? _selectedImage;
   bool _isUploading = false;
 
-  // Changed from List<String> to a single String
+  // Single selection variable
   String? _selectedSize;
+  String _selectedCategory = "Engine Oil"; // Default category
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -45,7 +47,6 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
     }
   }
 
-  // Updated to set a single value instead of toggling a list
   void _selectSize(String size) {
     setState(() {
       _selectedSize = size;
@@ -61,13 +62,15 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
         _selectedImage == null
             ? "Product image is required"
             : _selectedSize == null
-            ? "Please select a size"
-            : "All fields are required",
+                ? "Please select a size"
+                : "All fields are required",
         isError: true,
       );
       return;
     }
+
     setState(() => _isUploading = true);
+
     try {
       // 1. Upload to Cloudinary
       String? imageUrl = await _cloudinary.uploadProfileImage(
@@ -75,20 +78,21 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
       );
 
       if (imageUrl != null) {
-        // 2. Save to Firestore
+        // 2. Save to Firestore as a single String record (size: "250ml")
         LubricantModel product = LubricantModel(
           name: _nameController.text.trim(),
           description: _descController.text.trim(),
           brand: _brandController.text.trim(),
+          category: _selectedCategory, 
           buyingPrice: double.parse(_buyPriceController.text),
           sellingPrice: double.parse(_sellPriceController.text),
           imageUrl: imageUrl,
-          // Sending the single string size
-          sizes: [_selectedSize!],
+          size: _selectedSize!, // Corrected: Passing only the String
           stockQuantity: int.parse(_stockController.text),
         );
 
         await _service.addProduct(product);
+        
         if (mounted) {
           showCustomSnackBar(context, "Product Added Successfully");
           Navigator.pop(context);
@@ -107,12 +111,13 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
       backgroundColor: AppColors.background,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "ADD NEW PRODUCT",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 21,
             letterSpacing: 0,
+        fontFamily: GoogleFonts.poppins().fontFamily,
           ),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
@@ -131,8 +136,8 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
                   children: [
                     _buildImagePicker(),
                     const SizedBox(height: 5),
-                    _buildSectionLabel("BASIC INFORMATIONS"),
-                    SizedBox(height: 5),
+                    _buildSectionLabel("BASIC INFORMATION"),
+                    const SizedBox(height: 5),
                     _buildField(_nameController, "Product Name", Icons.edit),
                     _buildField(
                       _brandController,
@@ -145,8 +150,8 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
                       Icons.description,
                       maxLines: 1,
                     ),
-                    _buildSectionLabel("PRICING INFORMATIONS"),
-                    SizedBox(height: 5),
+                    _buildSectionLabel("PRICING INFORMATION"),
+                    const SizedBox(height: 5),
                     Row(
                       children: [
                         Expanded(
@@ -174,7 +179,6 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
                       Icons.inventory_2,
                       isNum: true,
                     ),
-
                     _buildSectionLabel("AVAILABLE SIZE"),
                     _buildSizePicker(),
                     const SizedBox(height: 20),
@@ -183,7 +187,6 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
                       isLoading: _isUploading,
                       onPressed: _handleSave,
                     ),
-                                  //    const SizedBox(height: 300),
                   ],
                 ),
               ),
@@ -237,10 +240,11 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
         controller: controller,
         maxLines: maxLines,
         keyboardType: isNum ? TextInputType.number : TextInputType.text,
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: Colors.white, fontFamily: 'Poppins'),
+        validator: (value) => value == null || value.isEmpty ? "Required" : null,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white70),
+          labelStyle: const TextStyle(color: Colors.white70, fontSize: 15),
           prefixIcon: Icon(icon, color: AppColors.primaryGreen, size: 18),
           filled: true,
           fillColor: AppColors.surface.withOpacity(0.3),
@@ -262,12 +266,10 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
     return Wrap(
       spacing: 10,
       children: options.map((size) {
-        // Selection check against the single string
         bool isSelected = _selectedSize == size;
         return FilterChip(
           label: Text(size),
           selected: isSelected,
-          // Force single selection logic
           onSelected: (bool selected) {
             _selectSize(size);
           },
@@ -276,6 +278,8 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
           labelStyle: TextStyle(
             color: isSelected ? Colors.black : Colors.white,
             fontSize: 12,
+            fontWeight: FontWeight.bold,
+        fontFamily: GoogleFonts.poppins().fontFamily,
           ),
           backgroundColor: AppColors.surface,
         );
@@ -288,11 +292,12 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
       padding: const EdgeInsets.only(bottom: 10, left: 0, top: 5),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           color: AppColors.primaryGreen,
           fontSize: 10,
           fontWeight: FontWeight.bold,
           letterSpacing: 1,
+        fontFamily: GoogleFonts.poppins().fontFamily,
         ),
       ),
     );

@@ -3,10 +3,11 @@ class LubricantModel {
   final String name;
   final String description;
   final String brand;
+  final String category;
   final double buyingPrice;
   final double sellingPrice;
   final String imageUrl;
-  final List<String> sizes; // e.g., ["1L", "4L", "5L"]
+  final String size; // Changed from List<String> to String
   final int stockQuantity;
 
   LubricantModel({
@@ -14,10 +15,11 @@ class LubricantModel {
     required this.name,
     required this.description,
     required this.brand,
+    required this.category,
     required this.buyingPrice,
     required this.sellingPrice,
     required this.imageUrl,
-    required this.sizes,
+    required this.size,
     required this.stockQuantity,
   });
 
@@ -26,10 +28,11 @@ class LubricantModel {
       'name': name,
       'description': description,
       'brand': brand,
+      'category': category,
       'buyingPrice': buyingPrice,
       'sellingPrice': sellingPrice,
       'imageUrl': imageUrl,
-      'sizes': sizes,
+      'size': size, // Saves as a simple String record
       'stockQuantity': stockQuantity,
     };
   }
@@ -40,10 +43,11 @@ class LubricantModel {
       name: map['name'] ?? '',
       description: map['description'] ?? '',
       brand: map['brand'] ?? '',
+      category: map['category'] ?? 'General',
       buyingPrice: (map['buyingPrice'] as num).toDouble(),
       sellingPrice: (map['sellingPrice'] as num).toDouble(),
       imageUrl: map['imageUrl'] ?? '',
-      sizes: List<String>.from(map['sizes'] ?? []),
+      size: map['size'] ?? 'N/A', // Reads as a simple String
       stockQuantity: map['stockQuantity'] ?? 0,
     );
   }
