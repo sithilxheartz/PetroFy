@@ -192,7 +192,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
                     "Track your daily dispense logs",
                     Icons.history,
                     () => _showPopup(
-                      "SALES HISTORY",
+                      "FUEL SALE HISTORY",
                       SalesHistoryPopup(pumperId: widget.user.uid),
                     ),
                   ),

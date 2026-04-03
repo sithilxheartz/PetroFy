@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:petrofy/pages/admin/order_history_popup_page.dart';
 import '../../models/fuel_order_model.dart';
 import '../../models/user_model.dart';
 import '../../services/order_service.dart';
@@ -93,7 +94,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
               width: 155,
               height: 35,
               child: TextButton.icon(
-                onPressed: () {},
+              onPressed: _showHistoryPopup,
                 icon: const Icon(
                   Icons.receipt_outlined,
                   color: Colors.white,
@@ -404,6 +405,27 @@ class _AddOrderPageState extends State<AddOrderPage> {
       ),
     );
   }
+  void _showHistoryPopup() {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => Container(
+      height: MediaQuery.of(context).size.height * 0.8,
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      ),
+      child: Column(
+        children: [
+          Container(margin: const EdgeInsets.symmetric(vertical: 15), width: 45, height: 5, decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(10))),
+          const Text("FUEL ORDER HISTORY", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2, color: AppColors.primaryGreen, fontSize: 14)),
+          const Expanded(child: OrderHistoryPopup()), // 👈 Your new widget
+        ],
+      ),
+    ),
+  );
+}
 
   Widget _buildDropdown() {
     return Container(
