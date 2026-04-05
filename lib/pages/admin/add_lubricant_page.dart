@@ -62,8 +62,8 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
         _selectedImage == null
             ? "Product image is required"
             : _selectedSize == null
-                ? "Please select a size"
-                : "All fields are required",
+            ? "Please select a size"
+            : "All fields are required",
         isError: true,
       );
       return;
@@ -83,7 +83,7 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
           name: _nameController.text.trim(),
           description: _descController.text.trim(),
           brand: _brandController.text.trim(),
-          category: _selectedCategory, 
+          category: _selectedCategory,
           buyingPrice: double.parse(_buyPriceController.text),
           sellingPrice: double.parse(_sellPriceController.text),
           imageUrl: imageUrl,
@@ -92,7 +92,7 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
         );
 
         await _service.addProduct(product);
-        
+
         if (mounted) {
           showCustomSnackBar(context, "Product Added Successfully");
           Navigator.pop(context);
@@ -117,7 +117,7 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
             fontWeight: FontWeight.bold,
             fontSize: 21,
             letterSpacing: 0,
-        fontFamily: GoogleFonts.poppins().fontFamily,
+            fontFamily: GoogleFonts.poppins().fontFamily,
           ),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
@@ -202,12 +202,12 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
       child: GestureDetector(
         onTap: _pickImage,
         child: Container(
-          height: 130,
-          width: 130,
+          height: 120,
+          width: 160,
           decoration: BoxDecoration(
             color: AppColors.surface.withOpacity(0.5),
             borderRadius: BorderRadius.circular(25),
-            border: Border.all(color: AppColors.primaryGreen.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
             image: _selectedImage != null
                 ? DecorationImage(
                     image: FileImage(_selectedImage!),
@@ -241,11 +241,12 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
         maxLines: maxLines,
         keyboardType: isNum ? TextInputType.number : TextInputType.text,
         style: const TextStyle(color: Colors.white, fontFamily: 'Poppins'),
-        validator: (value) => value == null || value.isEmpty ? "Required" : null,
+        validator: (value) =>
+            value == null || value.isEmpty ? "Required" : null,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white70, fontSize: 15),
-          prefixIcon: Icon(icon, color: AppColors.primaryGreen, size: 18),
+          labelStyle: const TextStyle(color: Colors.white70, fontSize: 14),
+          prefixIcon: Icon(icon, color: AppColors.primaryGreen, size: 16),
           filled: true,
           fillColor: AppColors.surface.withOpacity(0.3),
           enabledBorder: OutlineInputBorder(
@@ -279,7 +280,7 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
             color: isSelected ? Colors.black : Colors.white,
             fontSize: 12,
             fontWeight: FontWeight.bold,
-        fontFamily: GoogleFonts.poppins().fontFamily,
+            fontFamily: GoogleFonts.poppins().fontFamily,
           ),
           backgroundColor: AppColors.surface,
         );
@@ -297,7 +298,7 @@ class _AddLubricantPageState extends State<AddLubricantPage> {
           fontSize: 10,
           fontWeight: FontWeight.bold,
           letterSpacing: 1,
-        fontFamily: GoogleFonts.poppins().fontFamily,
+          fontFamily: GoogleFonts.poppins().fontFamily,
         ),
       ),
     );

@@ -99,7 +99,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       return const [
         GButton(icon: Icons.local_gas_station_outlined, text: 'Stock'),
         GButton(icon: Icons.bar_chart_outlined, text: 'Insights'),
-        GButton(icon: Icons.add_circle_outline, text: 'Orders'),
+        GButton(icon: Icons.add_business_outlined, text: 'Order'),
         GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     } else if (widget.userRole == 'pumper') {

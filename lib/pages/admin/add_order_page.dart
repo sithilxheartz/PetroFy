@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -412,34 +414,37 @@ class _AddOrderPageState extends State<AddOrderPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: const BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 15),
-              width: 45,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.white12,
-                borderRadius: BorderRadius.circular(10),
+      builder: (context) => BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: const BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 15),
+                width: 45,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white12,
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-            ),
-            const Text(
-              "FUEL ORDER HISTORY",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
-                color: AppColors.primaryGreen,
-                fontSize: 14,
+              const Text(
+                "FUEL ORDER HISTORY",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                  color: AppColors.primaryGreen,
+                  fontSize: 14,
+                ),
               ),
-            ),
-            const Expanded(child: OrderHistoryPopup()), // 👈 Your new widget
-          ],
+              const Expanded(child: OrderHistoryPopup()), // 👈 Your new widget
+            ],
+          ),
         ),
       ),
     );

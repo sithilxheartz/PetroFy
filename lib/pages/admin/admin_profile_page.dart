@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petrofy/home_page.dart';
 import 'package:petrofy/pages/admin/add_lubricant_page.dart';
+import 'package:petrofy/pages/admin/admin_lubricant_list_page.dart';
+import 'package:petrofy/pages/admin/lubricant_grn_page.dart';
 import 'package:petrofy/pages/admin/payment_approval_page.dart';
 import 'package:petrofy/pages/admin/price_config_page.dart';
 import 'package:petrofy/pages/admin/user_control_page.dart';
@@ -86,8 +88,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   _buildSectionLabel("STATION MANAGEMENT"),
                   const SizedBox(height: 15),
                   _buildMenuButton(
-                    "Payment Approvals",
-                    "Verify and safe-keep pumper collections",
+                    "Sales Payment Approval",
+                    "Verify and safe-keep pumper fuel payments",
                     Icons.fact_check_outlined,
                     () {
                       Navigator.push(
@@ -101,7 +103,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                     },
                   ),
                   _buildMenuButton(
-                    "Price Configuration",
+                    "Fuel Price Configuration",
                     "Update LKR rates for fuel types",
                     Icons.app_registration_rounded,
                     () {
@@ -114,14 +116,27 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                     },
                   ),
                   _buildMenuButton(
-                    "Inventory Control",
-                    "Manage fuel levels & tank thresholds",
+                    "Store Inventory Control",
+                    "Manage store lubricants prices and details",
                     Icons.storage_rounded,
                     () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const AddLubricantPage(),
+                          builder: (context) => const AdminLubricantListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
+                    "Store Inventory Intake",
+                    "Update lubricants' quantity levels with new stock",
+                    Icons.add_business_outlined,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LubricantGRNPage(),
                         ),
                       );
                     },

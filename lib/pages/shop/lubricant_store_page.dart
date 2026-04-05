@@ -28,7 +28,7 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
           height: MediaQuery.of(context).size.height * 0.8,
           decoration: const BoxDecoration(
@@ -70,8 +70,8 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 25,
-                    vertical: 20,
+                    horizontal: 20,
+                    vertical: 15,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,24 +101,23 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
                               product.size,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 12,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      //      const SizedBox(height: 5),
                       Text(
                         product.name,
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          fontFamily: 'Poppins',
                         ),
                       ),
-                      const SizedBox(height: 15),
+                      const SizedBox(height: 3),
 
                       const Text(
                         "PRODUCT DESCRIPTION",
@@ -139,14 +138,14 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
                         ),
                       ),
 
-                      const SizedBox(height: 25),
+                      const SizedBox(height: 15),
 
                       // Price & Stock Stats Card
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: AppColors.surface.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(15),
                           border: Border.all(
                             color: Colors.white.withOpacity(0.05),
                           ),
@@ -158,7 +157,7 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
                               "LKR ${product.sellingPrice.toStringAsFixed(2)}",
                             ),
                             const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 10),
+                              padding: EdgeInsets.symmetric(vertical: 5),
                               child: Divider(
                                 color: Colors.white10,
                                 thickness: 1,
@@ -176,7 +175,6 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 30),
                     ],
                   ),
                 ),
@@ -184,7 +182,10 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
 
               // 3. Bottom Action Bar
               Padding(
-                padding: const EdgeInsets.all(25),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 15,
+                  horizontal: 20,
+                ),
                 child: FuelButton(
                   text: "ADD TO MY CART",
                   onPressed: () {
@@ -199,6 +200,7 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
                   },
                 ),
               ),
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -223,8 +225,7 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: valColor,
-            fontSize: 15,
-            fontFamily: 'Poppins',
+            fontSize: 16,
           ),
         ),
       ],
@@ -337,7 +338,7 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
                     decoration: InputDecoration(
                       hintText: "Search by brand or product...",
                       hintStyle: const TextStyle(
-                        color: Colors.white54,
+                        color: AppColors.textDim,
                         fontSize: 14,
                       ),
                       prefixIcon: const Icon(
@@ -450,11 +451,10 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
                   Text(
                     product.brand,
                     style: const TextStyle(
-                      color: AppColors.primaryGreen,
+                      color: AppColors.textDim,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
-                      
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -463,10 +463,10 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.primaryGreen,
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
-           fontFamily: GoogleFonts.poppins().fontFamily,
+                      fontFamily: GoogleFonts.poppins().fontFamily,
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -483,7 +483,7 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
                       ),
                       const Icon(
                         Icons.arrow_forward_ios,
-                        color: AppColors.primaryGreen,
+                        color: Colors.white,
                         size: 12,
                       ),
                     ],
