@@ -97,7 +97,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
               child: TextButton.icon(
                 onPressed: _showHistoryPopup,
                 icon: const Icon(
-                  Icons.receipt_outlined,
+                  Icons.assignment_outlined,
                   color: Colors.white,
                   size: 18,
                 ),
@@ -105,7 +105,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
                   "HISTORY",
                   style: TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                 //   fontWeight: FontWeight.bold,
                   ),
                 ),
                 style: TextButton.styleFrom(
