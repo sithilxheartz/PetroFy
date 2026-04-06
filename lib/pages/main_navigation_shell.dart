@@ -86,8 +86,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         ];
       default:
         return [
-          const Center(child: Text("Home")),
-          const Center(child: Text("Search")),
+          LubricantStorePage(),
+          const FuelLevelDashboard(),
+          const Center(child: Text("Coming Soon...")),
           PumperProfilePage(user: _currentUser!),
         ];
     }
@@ -111,8 +112,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       ];
     } else {
       return const [
-        GButton(icon: Icons.home_outlined, text: 'Home'),
-        GButton(icon: Icons.map_outlined, text: 'Find'),
+        GButton(icon: Icons.store, text: 'Store'),
+        GButton(icon: Icons.local_gas_station_outlined, text: 'Fuel'),
+        GButton(icon: Icons.newspaper, text: 'News'),
         GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     }

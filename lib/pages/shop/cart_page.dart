@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:petrofy/pages/shop/checkout_page.dart';
 import 'package:provider/provider.dart';
 import '../../models/cart_item_model.dart';
 import '../../providers/cart_provider.dart';
@@ -28,26 +29,20 @@ class CartPage extends StatelessWidget {
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
-
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 15, top: 8, bottom: 8),
-            child: Container(
-              width: 155,
+            child: SizedBox(
+              width: 140,
               height: 35,
               child: TextButton.icon(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.assignment_outlined,
-                  color: Colors.white,
-                  size: 18,
-                ),
+                onPressed: () {
+                  // Navigate to Order History (to be implemented)
+                },
+                icon: const Icon(Icons.assignment_outlined, color: Colors.white, size: 16),
                 label: const Text(
                   "MY ORDERS",
-                  style: TextStyle(
-                    color: Colors.white,
-                    //   fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 12),
                 ),
                 style: TextButton.styleFrom(
                   backgroundColor: AppColors.surface,
@@ -84,15 +79,14 @@ class CartPage extends StatelessWidget {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.primaryGreen,
-                    ),
+                    child: CircularProgressIndicator(color: AppColors.primaryGreen),
                   );
                 }
 
                 final items = snapshot.data ?? [];
                 if (items.isEmpty) return _buildEmptyCart();
 
+                // Calculate total from the stream data
                 double total = items.fold(
                   0,
                   (sum, item) => sum + (item.price * item.quantity),
@@ -108,7 +102,8 @@ class CartPage extends StatelessWidget {
                             _buildCartTile(items[index], cartProv),
                       ),
                     ),
-                    _buildCheckoutFooter(total),
+                    // Pass the items and total to the footer
+                    _buildCheckoutFooter(context, items, total),
                   ],
                 );
               },
@@ -121,8 +116,8 @@ class CartPage extends StatelessWidget {
 
   Widget _buildCartTile(CartItemModel item, CartProvider prov) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface.withOpacity(0.5),
         borderRadius: BorderRadius.circular(20),
@@ -134,8 +129,8 @@ class CartPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(15),
             child: Image.network(
               item.imageUrl,
-              width: 60,
-              height: 60,
+              width: 65,
+              height: 65,
               fit: BoxFit.cover,
             ),
           ),
@@ -146,17 +141,18 @@ class CartPage extends StatelessWidget {
               children: [
                 Text(
                   item.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   "${item.size} | Qty: ${item.quantity}",
-                  style: const TextStyle(
-                    color: AppColors.primaryGreen,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: AppColors.primaryGreen, fontSize: 12),
+                ),
+                Text(
+                  "LKR ${item.price.toInt()} each",
+                  style: const TextStyle(color: AppColors.textDim, fontSize: 10),
                 ),
               ],
             ),
@@ -164,19 +160,13 @@ class CartPage extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 5.0, right: 5),
-                child: Text(
-                  "LKR ${(item.price * item.quantity).toInt()}",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+              Text(
+                "LKR ${(item.price * item.quantity).toInt()}",
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               ),
               IconButton(
-                icon: const Icon(
-                  Icons.delete_outline,
-                  color: Colors.redAccent,
-                  size: 23,
-                ),
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 22),
                 onPressed: () => prov.deleteItem(item.productId),
               ),
             ],
@@ -186,18 +176,22 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCheckoutFooter(double total) {
+  Widget _buildCheckoutFooter(BuildContext context, List<CartItemModel> items, double total) {
     return Container(
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.primaryGreen.withOpacity(0.1),
-          width: 1.5,
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          )
+        ],
       ),
       child: SafeArea(
+        top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -205,8 +199,8 @@ class CartPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  "TOTAL PAYABLE:",
-                  style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
+                  "TOTAL PAYABLE",
+                  style: TextStyle(color: Colors.white70, fontSize: 12, letterSpacing: 1),
                 ),
                 Text(
                   "LKR ${total.toStringAsFixed(2)}",
@@ -219,17 +213,37 @@ class CartPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            FuelButton(text: "CHECKOUT NOW", onPressed: () {}),
+            FuelButton(
+              text: "PROCEED TO CHECKOUT",
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CheckoutPage(
+                      total: total,
+                      items: items,
+                    ),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEmptyCart() => const Center(
-    child: Text(
-      "Cart is Empty",
-      style: TextStyle(fontFamily: 'Poppins', color: AppColors.textDim),
-    ),
-  );
+  Widget _buildEmptyCart() => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.shopping_basket_outlined, size: 80, color: AppColors.primaryGreen.withOpacity(0.2)),
+            const SizedBox(height: 20),
+            const Text(
+              "Your cart is empty",
+              style: TextStyle(fontFamily: 'Poppins', color: AppColors.textDim, fontSize: 16),
+            ),
+          ],
+        ),
+      );
 }
