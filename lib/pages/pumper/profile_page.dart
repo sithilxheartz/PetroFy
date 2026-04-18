@@ -137,7 +137,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-            
+
                   // TODAY'S QUICK STATS
                   StreamBuilder<List<FuelSaleModel>>(
                     stream: _salesService.getPumperFilteredSales(
@@ -171,7 +171,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
                       );
                     },
                   ),
-            
+
                   const SizedBox(height: 15),
                   const Align(
                     alignment: Alignment.centerLeft,
@@ -186,7 +186,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 15),
-            
+
                   _buildMenuButton(
                     "Sales History",
                     "Track your daily dispense logs",
@@ -205,12 +205,27 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
                       ShiftHistoryPopup(pumperId: widget.user.uid),
                     ),
                   ),
+                  const SizedBox(height: 5),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "ACCOUNT SETTINGS",
+                      style: TextStyle(
+                        color: AppColors.primaryGreen,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
                   _buildMenuButton(
                     "Update Profile Image",
-                    "Sync your identification photo",
-                    Icons.cloud_upload_outlined,
+                    "Update administrative profile and security photo",
+                    Icons.face_retouching_natural_rounded,
                     _handleImageUpload, // Connected to image upload logic
                   ),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
@@ -223,7 +238,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
   Widget _buildStatTile(String label, String val, IconData icon) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(20),
@@ -242,7 +257,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 3,),
+            SizedBox(height: 3),
             Text(
               val,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -265,7 +280,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: AppColors.surface.withOpacity(0.6),
             borderRadius: BorderRadius.circular(20),
@@ -273,7 +288,14 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
           ),
           child: Row(
             children: [
-              Icon(icon, color: AppColors.primaryGreen),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: AppColors.primaryGreen, size: 20),
+              ),
               const SizedBox(width: 15),
               Expanded(
                 child: Column(

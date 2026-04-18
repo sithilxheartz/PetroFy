@@ -96,7 +96,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                   _buildMenuButton(
                     "Update Profile Image",
                     "Update administrative profile and security photo",
-                    Icons.security_outlined,
+                  Icons.face_retouching_natural_rounded,
                     _handleImageUpload,
                   ),
 
