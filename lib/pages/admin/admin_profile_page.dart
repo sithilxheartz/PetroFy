@@ -86,111 +86,103 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   // const SizedBox(height: 15),
 
                   // SYSTEM MANAGEMENT MENU
-                  _buildSectionLabel("STATION MANAGEMENT"),
-                  const SizedBox(height: 15),
-                  _buildMenuButton(
+                // --- FUEL & STATION OPERATIONS ---
+_buildSectionLabel("STATION OPERATIONS"),
+const SizedBox(height: 15),
+
+_buildMenuButton(
                     "Sales Payment Approval",
-                    "Verify and safe-keep pumper fuel payments",
+  "Review and approve pumper fuel shift payments",
                     Icons.fact_check_outlined,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PaymentApprovalPage(
-                            adminUser: widget.user,
-                          ), // 👈 Passing the admin data
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuButton(
-                    "Fuel Price Configuration",
-                    "Update LKR rates for fuel types",
+  () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentApprovalPage(adminUser: widget.user),
+      ),
+    );
+  },
+),
+
+_buildMenuButton(
+  "Fuel Rate Control",
+  "Configure real-time LKR pricing for fuel types",
                     Icons.app_registration_rounded,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PriceConfigPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuButton(
-                    "Store Inventory Control",
-                    "Manage store lubricants prices and details",
-                    Icons.storage_rounded,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AdminLubricantListPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuButton(
-                    "Store Inventory Intake",
-                    "Update lubricants' quantity levels with new stock",
-                    Icons.add_business_outlined,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LubricantGRNPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuButton(
-                    "Store Order Management",
-                    "Update order progress of store ",
-                    Icons.add_business_outlined,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ManageOrdersPage(),
-                        ),
-                      );
-                    },
-                  ),
+  () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PriceConfigPage()),
+    );
+  },
+),
 
-                  //    _buildMenuButton(
-                  //      "Shift Scheduling",
-                  //      "Assign staff to specific pumps",
-                  //      Icons.calendar_month_rounded,
-                  //      () => _navigateToPage("Shifts"),
-                  //   ),
-                  const SizedBox(height: 5),
-                  _buildSectionLabel("SYSTEM MANAGEMENT"),
-                  const SizedBox(height: 15),
+const SizedBox(height: 5),
 
-                  _buildMenuButton(
-                    "User Management",
-                    "Control access for pumpers & managers",
-                    Icons.people_alt_rounded,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const UserManagementPage(),
-                        ),
-                      );
-                    },
-                  ),
-                                    _buildMenuButton(
+// --- INVENTORY & LOGISTICS ---
+_buildSectionLabel("INVENTORY & LOGISTICS"),
+const SizedBox(height: 15),
+
+_buildMenuButton(
+  "Catalog Management",
+  "Modify lubricant specifications and retail pricing",
+  Icons.inventory_2_outlined,
+  () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AdminLubricantListPage()),
+    );
+  },
+),
+
+_buildMenuButton(
+  "Add New Stocks (GRN)",
+  "Register incoming stock and update inventory levels",
+                    Icons.add_business_outlined,
+  () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const LubricantGRNPage()),
+    );
+  },
+),
+
+_buildMenuButton(
+  "Pending Online Orders",
+  "Process active shipments and track delivery status",
+  Icons.local_shipping_outlined, // Changed to a more suitable icon
+  () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ManageOrdersPage()),
+    );
+  },
+),
+
+const SizedBox(height: 5),
+
+// --- ADMINISTRATION ---
+_buildSectionLabel("SYSTEM ADMINISTRATION"),
+const SizedBox(height: 15),
+
+_buildMenuButton(
+  "User Access Control",
+  "Manage system permissions for pumpers and staff",
+  Icons.admin_panel_settings_outlined,
+  () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const UserManagementPage()),
+    );
+  },
+),
+
+_buildMenuButton(
                     "Update Profile Image",
-                    "Sync your identification photo",
-                    Icons.cloud_upload_outlined,
-                    _handleImageUpload, // Connected to image upload logic
-                  ),
-                  // _buildMenuButton(
-                  //    "System Settings",
-                  //   "Configure cloud sync & notifications",
-                  //    Icons.settings_suggest_rounded,
-                  //    () => _navigateToPage("Settings"),
-                  //   ),
+  "Update administrative profile and security photo",
+  Icons.face_retouching_natural_rounded,
+  _handleImageUpload,
+),
+
                   const SizedBox(height: 10),
                 ],
               ),

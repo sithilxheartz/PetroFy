@@ -133,55 +133,66 @@ class _UserManagementPageState extends State<UserManagementPage> {
     );
   }
 
-  Widget _buildSearchBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-      ),
-      child: TextField(
-        controller: _searchController,
-        onChanged: (value) {
-          setState(() {
-            _searchQuery = value;
-          });
-        },
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: "Search by name or email...",
-          hintStyle: const TextStyle(color: AppColors.textDim, fontSize: 14),
-          prefixIcon: const Icon(Icons.search, color: AppColors.primaryGreen),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(
-                    Icons.clear,
-                    color: AppColors.textDim,
-                    size: 20,
-                  ),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() {
-                      _searchQuery = "";
-                    });
-                  },
-                )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 15),
+Widget _buildSearchBar() {
+  return Padding(
+    padding: const EdgeInsets.only(left: 0, right: 0, bottom: 0, top: 0),
+    child: TextField(
+      controller: _searchController, // Keeps your controller functionality
+      onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: "Search by Name or Email...",
+        hintStyle: const TextStyle(color: AppColors.textDim, fontSize: 14),
+        prefixIcon: const Icon(Icons.search, color: AppColors.primaryGreen),
+        
+        // --- Added the functionality back to the new theme ---
+        suffixIcon: _searchQuery.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear, color: AppColors.textDim, size: 20),
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {
+                    _searchQuery = "";
+                  });
+                },
+              )
+            : null,
+            
+        // --- Themed visual styling ---
+        filled: true,
+        fillColor: AppColors.surface,
+        contentPadding: const EdgeInsets.symmetric(vertical: 15),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(
+            color: AppColors.primaryGreen.withOpacity(0.1),
+            width: 1.5,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(
+            color: AppColors.primaryGreen,
+            width: 1.5,
+          ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildUserCard(String id, String name, String email, String role) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.6),
+        color: AppColors.surface.withOpacity(0.5),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(
+       //   color: _getStatusColor(status).withOpacity(0.1),
+          color: AppColors.primaryGreen.withOpacity(0.1),
+          width: 1.5,
+        ),
       ),
       child: Row(
         children: [

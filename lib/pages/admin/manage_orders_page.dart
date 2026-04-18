@@ -99,7 +99,7 @@ class _ManageOrdersPageState extends State<ManageOrdersPage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10, top: 15),
+      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 0, top: 15),
       child: TextField(
         onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
         style: const TextStyle(color: Colors.white),
@@ -138,6 +138,18 @@ class _ManageOrdersPageState extends State<ManageOrdersPage> {
           Positioned(
             top: -50,
             right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primaryGreen.withOpacity(0.05),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -50,
+            left: -50,
             child: Container(
               width: 250,
               height: 250,

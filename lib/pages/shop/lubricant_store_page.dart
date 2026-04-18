@@ -115,7 +115,7 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
         onChanged: (v) => setState(() => _searchQuery = v),
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
-          hintText: "Search products...",
+                hintText: "Search by Name or Brand...",
           hintStyle: const TextStyle(color: AppColors.textDim, fontSize: 14),
           prefixIcon: const Icon(Icons.search, color: AppColors.primaryGreen),
           filled: true,

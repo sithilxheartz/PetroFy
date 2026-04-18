@@ -16,6 +16,9 @@ class AdminLubricantListPage extends StatefulWidget {
 
 class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
   final LubricantService _service = LubricantService();
+  
+  // --- NEW: SEARCH STATE ---
+  String _searchQuery = "";
 
   // --- 1. THE THEMED EDIT BOTTOM SHEET ---
   void _showEditSheet(LubricantModel product) {
@@ -38,14 +41,12 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
             borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
           ),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(25),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(10))),
-                ),
+                const SizedBox(height: 15),
+                Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(10)))),
                 const SizedBox(height: 20),
                 Center(
                   child: Text(
@@ -59,29 +60,35 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                _buildThemedField(nameController, "Product Name", Icons.edit_outlined),
-                _buildThemedField(brandController, "Brand", Icons.branding_watermark_outlined),
-                _buildThemedField(descController, "Description", Icons.notes, maxLines: 1),
-                Row(
-                  children: [
-                    Expanded(child: _buildThemedField(buyPriceController, "Buying Price", Icons.arrow_downward, isNum: true)),
-                    const SizedBox(width: 15),
-                    Expanded(child: _buildThemedField(sellPriceController, "Selling Price", Icons.arrow_upward, isNum: true)),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.all(25),
+                  child: Column(
+                    children: [
+                      _buildThemedField(nameController, "Product Name", Icons.edit_outlined),
+                      _buildThemedField(brandController, "Brand", Icons.branding_watermark_outlined),
+                      _buildThemedField(descController, "Description", Icons.notes, maxLines: 1),
+                      Row(
+                        children: [
+                          Expanded(child: _buildThemedField(buyPriceController, "Buying Price", Icons.arrow_downward, isNum: true)),
+                          const SizedBox(width: 15),
+                          Expanded(child: _buildThemedField(sellPriceController, "Selling Price", Icons.arrow_upward, isNum: true)),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      FuelButton(
+                        text: "UPDATE PRODUCT",
+                        onPressed: () => _confirmSave(context, product.id!, {
+                          'name': nameController.text.trim(),
+                          'brand': brandController.text.trim(),
+                          'description': descController.text.trim(),
+                          'buyingPrice': double.tryParse(buyPriceController.text) ?? 0,
+                          'sellingPrice': double.tryParse(sellPriceController.text) ?? 0,
+                        }),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 5),
-                FuelButton(
-                  text: "UPDATE PRODUCT",
-                  onPressed: () => _confirmSave(context, product.id!, {
-                    'name': nameController.text.trim(),
-                    'brand': brandController.text.trim(),
-                    'description': descController.text.trim(),
-                    'buyingPrice': double.tryParse(buyPriceController.text) ?? 0,
-                    'sellingPrice': double.tryParse(sellPriceController.text) ?? 0,
-                  }),
-                ),
-                const SizedBox(height:40),
+                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -90,7 +97,39 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
     );
   }
 
-  // --- 2. THE CONFIRMATION DIALOG FOR SAVING ---
+  // --- 2. SEARCH BAR WIDGET ---
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10, top: 15),
+      child: TextField(
+        onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: "Search by Name or Brand...",
+          hintStyle: const TextStyle(color: AppColors.textDim, fontSize: 14),
+          prefixIcon: const Icon(Icons.search, color: AppColors.primaryGreen),
+          filled: true,
+          fillColor: AppColors.surface,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide(
+              color: AppColors.primaryGreen.withOpacity(0.1),
+              width: 1.5,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(
+              color: AppColors.primaryGreen,
+              width: 1.5,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- 3. CONFIRMATION DIALOGS ---
   void _confirmSave(BuildContext context, String id, Map<String, dynamic> data) {
     showDialog(
       context: context,
@@ -98,12 +137,9 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: AlertDialog(
           backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Colors.white10, width: 1),
-          ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.white10)),
           title: const Text("Confirm Update", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          content: const Text("Are you sure you want to save these changes to the live store?", style: TextStyle(color: AppColors.textDim)),
+          content: const Text("Save these changes to the live store?", style: TextStyle(color: AppColors.textDim)),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text("CANCEL", style: TextStyle(color: Colors.white54))),
             ElevatedButton(
@@ -124,7 +160,6 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
     );
   }
 
-  // --- 3. THE CONFIRMATION DIALOG FOR DELETING ---
   void _confirmDelete(BuildContext context, LubricantModel product) {
     showDialog(
       context: context,
@@ -132,19 +167,9 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
         filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: AlertDialog(
           backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Colors.redAccent, width: 0.5),
-          ),
-          title: Row(
-            children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
-              const SizedBox(width: 10),
-              const Text("Delete Item", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          content: Text("Are you sure you want to permanently delete ${product.name}? This action cannot be undone.", 
-            style: const TextStyle(color: AppColors.textDim, fontSize: 13)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.redAccent, width: 0.5)),
+          title: const Row(children: [Icon(Icons.warning_amber_rounded, color: Colors.redAccent), SizedBox(width: 10), Text("Delete Item", style: TextStyle(color: Colors.white))]),
+          content: Text("Delete ${product.name} permanently?", style: const TextStyle(color: AppColors.textDim, fontSize: 13)),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text("CANCEL", style: TextStyle(color: Colors.white54))),
             ElevatedButton(
@@ -153,10 +178,10 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
                 await _service.deleteProduct(product.id!);
                 if (mounted) {
                   Navigator.pop(context);
-                  showCustomSnackBar(context, "${product.name} removed from inventory", isError: true);
+                  showCustomSnackBar(context, "${product.name} removed", isError: true);
                 }
               },
-              child: const Text("DELETE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text("DELETE", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -177,12 +202,11 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
           Padding(
             padding: const EdgeInsets.only(right: 15, top: 8, bottom: 8),
             child: SizedBox(
-              width: 155,
-              height: 35,
+              width: 135,
               child: TextButton.icon(
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddLubricantPage())),
                 icon: const Icon(Icons.add_business_outlined, color: Colors.white, size: 18),
-                label: const Text("NEW ITEM", style: TextStyle(color: Colors.white)),
+                label: const Text("NEW ITEM", style: TextStyle(color: Colors.white, fontSize: 12)),
                 style: TextButton.styleFrom(
                   backgroundColor: AppColors.surface,
                   shape: RoundedRectangleBorder(
@@ -200,17 +224,34 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
           Positioned(top: -50, right: -50, child: Container(width: 250, height: 250, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primaryGreen.withOpacity(0.05)))),
           Positioned(bottom: -50, left: -50, child: Container(width: 250, height: 250, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primaryGreen.withOpacity(0.05)))),
           SafeArea(
-            child: StreamBuilder<List<LubricantModel>>(
-              stream: _service.getProducts(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen));
-                final products = snapshot.data!;
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                  itemCount: products.length,
-                  itemBuilder: (context, index) => _buildAdminProductTile(products[index]),
-                );
-              },
+            child: Column(
+              children: [
+                _buildSearchBar(), // --- INTEGRATED SEARCH BAR ---
+                Expanded(
+                  child: StreamBuilder<List<LubricantModel>>(
+                    stream: _service.getProducts(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen));
+                      
+                      // Filter products based on search query locally
+                      final products = snapshot.data!.where((p) {
+                        return p.name.toLowerCase().contains(_searchQuery) || 
+                               p.brand.toLowerCase().contains(_searchQuery);
+                      }).toList();
+
+                      if (products.isEmpty) {
+                        return const Center(child: Text("No products found", style: TextStyle(color: AppColors.textDim)));
+                      }
+
+                      return ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                        itemCount: products.length,
+                        itemBuilder: (context, index) => _buildAdminProductTile(products[index]),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -237,22 +278,17 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
               children: [
                 Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14)),
                 Text("${product.brand} • ${product.size}", style: const TextStyle(color: AppColors.textDim, fontSize: 11)),
-                Text("Available Quantity: ${product.stockQuantity}", style: const TextStyle(color: AppColors.primaryGreen, fontSize: 11)),
+                Text("Stock: ${product.stockQuantity}", style: const TextStyle(color: AppColors.primaryGreen, fontSize: 11)),
               ],
             ),
           ),
-          // Action Buttons
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.settings_outlined, color: AppColors.primaryGreen, size: 22),
-                onPressed: () => _showEditSheet(product),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete_rounded, color: Colors.redAccent, size: 22),
-                onPressed: () => _confirmDelete(context, product),
-              ),
-            ],
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, color: AppColors.primaryGreen, size: 22),
+            onPressed: () => _showEditSheet(product),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_rounded, color: Colors.redAccent, size: 22),
+            onPressed: () => _confirmDelete(context, product),
           ),
         ],
       ),
