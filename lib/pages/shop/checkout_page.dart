@@ -19,7 +19,13 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
+  // New Controllers for Shipping
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
+  final _zipController = TextEditingController();
+
+  // Payment Controllers
   final _cardNumController = TextEditingController();
   final _expiryController = TextEditingController();
   final _cvvController = TextEditingController();
@@ -28,11 +34,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
   String _paymentStatusText = "Initializing Secure Connection...";
 
   Future<void> _handleStripePayment() async {
-    if (_addressController.text.isEmpty ||
+    // Validation check
+    if (_nameController.text.isEmpty ||
+        _phoneController.text.isEmpty ||
+        _addressController.text.isEmpty ||
         _cardNumController.text.length < 16) {
       showCustomSnackBar(
         context,
-        "Please enter valid payment details",
+        "Please complete all shipping and payment details",
         isError: true,
       );
       return;
@@ -51,12 +60,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
       final user = FirebaseAuth.instance.currentUser;
       final orderId = "ORD-${DateTime.now().millisecondsSinceEpoch}";
 
+      // Saving all details to Firestore
       await FirebaseFirestore.instance.collection('orders').doc(orderId).set({
         'orderId': orderId,
         'userId': user!.uid,
+        'customerName': _nameController.text.trim(),
+        'phoneNumber': _phoneController.text.trim(),
+        'address': _addressController.text.trim(),
+        'zipCode': _zipController.text.trim(),
         'items': widget.items.map((e) => e.toMap()).toList(),
         'total': widget.total,
-        'address': _addressController.text.trim(),
         'paymentDetails':
             'Visa ending in ${_cardNumController.text.substring(_cardNumController.text.length - 4)}',
         'status': 'Paid',
@@ -118,90 +131,103 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
-          "PAYMENT",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          "CHECKOUT ORDER",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 21,
+            letterSpacing: 0,
+          ),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
       ),
       body: Stack(
         children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(25),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionHeader("SHIPPING DETAILS"),
-                _buildField(
-                  _addressController,
-                  "Full Shipping Address",
-                  Icons.local_shipping_outlined,
-                ),
-                const SizedBox(height: 35),
-                _buildSectionHeader("CREDIT / DEBIT CARD"),
-                _buildRealisticCardForm(),
-                const SizedBox(height: 35),
-                _buildPriceBreakdown(),
-                const SizedBox(height: 40),
-
-                // --- FIXED BUTTON LOGIC ---
-                FuelButton(
-                  text: "PAY NOW",
-                  isLoading: _isProcessing,
-                  // If _isProcessing is true, we pass an empty function so it's not null
-                  // If false, we run the payment logic
-                  onPressed: () {
-                    if (!_isProcessing) {
-                      _handleStripePayment();
-                    }
-                  },
-                ),
-
-                const SizedBox(height: 20),
-                const Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.lock, size: 12, color: Colors.white38),
-                      SizedBox(width: 5),
-                      Text(
-                        "SECURED BY STRIPE",
-                        style: TextStyle(
-                          color: Colors.white38,
-                          fontSize: 10,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (_isProcessing)
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(
-                color: Colors.black87,
-                width: double.infinity,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const CircularProgressIndicator(
-                      color: AppColors.primaryGreen,
-                      strokeWidth: 2,
-                    ),
-                    const SizedBox(height: 25),
-                    Text(
-                      _paymentStatusText,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                  ],
-                ),
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primaryGreen.withOpacity(0.05),
               ),
             ),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader("SHIPPING DETAILS"),
+                  _buildShippingForm(),
+                  const SizedBox(height: 20),
+                  _buildSectionHeader("VISA / MASTER CARD DETAILS"),
+                  _buildRealisticCardForm(),
+                  const SizedBox(height: 20),
+                  _buildPriceBreakdown(),
+                  const SizedBox(height: 20),
+                  FuelButton(
+                    text: "PAY NOW",
+                    isLoading: _isProcessing,
+                    onPressed: () {
+                      if (!_isProcessing) _handleStripePayment();
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  _buildStripeFooter(),
+                ],
+              ),
+            ),
+          ),
+          if (_isProcessing) _buildProcessingOverlay(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShippingForm() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        children: [
+          _buildField(
+            _nameController,
+            "Full Name",
+            Icons.person_outline,
+            type: TextInputType.name,
+          ),
+          const Divider(color: Colors.white10, height: 1),
+          _buildField(
+            _phoneController,
+            "Mobile Number",
+            Icons.phone_android_outlined,
+            type: TextInputType.phone,
+            inputFormatters: [MaskedInputFormatter('+94 00 000 0000')],
+          ),
+          const Divider(color: Colors.white10, height: 1),
+          _buildField(
+            _addressController,
+            "Full Shipping Address",
+            Icons.local_shipping_outlined,
+            type: TextInputType.streetAddress,
+          ),
+          const Divider(color: Colors.white10, height: 1),
+          _buildField(
+            _zipController,
+            "ZIP / Postal Code",
+            Icons.pin_drop_outlined,
+            type: TextInputType.number,
+          ),
         ],
       ),
     );
@@ -220,6 +246,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             _cardNumController,
             "0000 0000 0000 0000",
             Icons.credit_card,
+            type: TextInputType.number,
             inputFormatters: [MaskedInputFormatter('0000 0000 0000 0000')],
           ),
           const Divider(color: Colors.white10, height: 1),
@@ -230,6 +257,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   _expiryController,
                   "MM/YY",
                   Icons.event,
+                  type: TextInputType.number,
                   inputFormatters: [MaskedInputFormatter('00/00')],
                 ),
               ),
@@ -239,6 +267,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   _cvvController,
                   "CVC",
                   Icons.lock_outline,
+                  type: TextInputType.number,
                   inputFormatters: [MaskedInputFormatter('000')],
                 ),
               ),
@@ -279,6 +308,92 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  // --- Helper Widgets ---
+
+  Widget _buildProcessingOverlay() {
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+      child: Container(
+        color: Colors.black87,
+        width: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(
+              color: AppColors.primaryGreen,
+              strokeWidth: 2,
+            ),
+            const SizedBox(height: 25),
+            Text(
+              _paymentStatusText,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStripeFooter() {
+    return const Center(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.lock, size: 12, color: Colors.white38),
+          SizedBox(width: 5),
+          Text(
+            "SECURED BY STRIPE",
+            style: TextStyle(
+              color: Colors.white38,
+              fontSize: 10,
+              letterSpacing: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12, left: 5),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: AppColors.primaryGreen,
+          fontSize: 11.5,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildField(
+    TextEditingController controller,
+    String hint,
+    IconData icon, {
+    TextInputType type = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
+    return TextField(
+      controller: controller,
+      inputFormatters: inputFormatters,
+      keyboardType: type,
+      style: const TextStyle(color: Colors.white, fontSize: 15),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white24, fontSize: 14),
+        prefixIcon: Icon(icon, color: Colors.white38, size: 20),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 18,
+          horizontal: 15,
+        ),
+        border: InputBorder.none,
+      ),
+    );
+  }
+
   Widget _priceRow(String label, String price) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -294,45 +409,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
             style: const TextStyle(color: Colors.white, fontSize: 13),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12, left: 5),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: AppColors.primaryGreen,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildField(
-    TextEditingController controller,
-    String hint,
-    IconData icon, {
-    List<TextInputFormatter>? inputFormatters,
-  }) {
-    return TextField(
-      controller: controller,
-      inputFormatters: inputFormatters,
-      keyboardType: TextInputType.number,
-      style: const TextStyle(color: Colors.white, fontSize: 15),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white24, fontSize: 14),
-        prefixIcon: Icon(icon, color: Colors.white38, size: 20),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 18,
-          horizontal: 15,
-        ),
-        border: InputBorder.none,
       ),
     );
   }

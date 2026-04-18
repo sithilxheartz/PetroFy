@@ -5,6 +5,7 @@ import 'package:petrofy/home_page.dart';
 import 'package:petrofy/pages/admin/add_lubricant_page.dart';
 import 'package:petrofy/pages/admin/admin_lubricant_list_page.dart';
 import 'package:petrofy/pages/admin/lubricant_grn_page.dart';
+import 'package:petrofy/pages/admin/manage_orders_page.dart';
 import 'package:petrofy/pages/admin/payment_approval_page.dart';
 import 'package:petrofy/pages/admin/price_config_page.dart';
 import 'package:petrofy/pages/admin/user_control_page.dart';
@@ -137,6 +138,19 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const LubricantGRNPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
+                    "Store Order Management",
+                    "Update order progress of store ",
+                    Icons.add_business_outlined,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ManageOrdersPage(),
                         ),
                       );
                     },

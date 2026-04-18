@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:petrofy/pages/shop/checkout_page.dart';
+import 'package:petrofy/pages/shop/my_orders_page.dart';
 import 'package:provider/provider.dart';
 import '../../models/cart_item_model.dart';
 import '../../providers/cart_provider.dart';
@@ -36,9 +37,7 @@ class CartPage extends StatelessWidget {
               width: 140,
               height: 35,
               child: TextButton.icon(
-                onPressed: () {
-                  // Navigate to Order History (to be implemented)
-                },
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MyOrdersPage())),
                 icon: const Icon(Icons.assignment_outlined, color: Colors.white, size: 16),
                 label: const Text(
                   "MY ORDERS",
@@ -116,7 +115,7 @@ class CartPage extends StatelessWidget {
 
   Widget _buildCartTile(CartItemModel item, CartProvider prov) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface.withOpacity(0.5),
