@@ -165,7 +165,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
                           _buildStatTile(
                             "USER ROLE",
                             widget.user.role.substring(0, 6).toUpperCase(),
-                            Icons.badge_outlined,
+                            Icons.people,
                           ),
                         ],
                       );
@@ -247,7 +247,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: AppColors.primaryGreen, size: 25),
+            Icon(icon, color: AppColors.primaryGreen, size: 23),
             const SizedBox(height: 5),
             Text(
               label,
