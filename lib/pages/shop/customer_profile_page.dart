@@ -2,27 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petrofy/home_page.dart';
-import 'package:petrofy/pages/admin/add_lubricant_page.dart';
-import 'package:petrofy/pages/admin/admin_lubricant_list_page.dart';
-import 'package:petrofy/pages/admin/lubricant_grn_page.dart';
-import 'package:petrofy/pages/admin/manage_orders_page.dart';
-import 'package:petrofy/pages/admin/payment_approval_page.dart';
-import 'package:petrofy/pages/admin/price_config_page.dart';
-import 'package:petrofy/pages/admin/user_control_page.dart';
+import 'package:petrofy/pages/shop/my_orders_page.dart';
 import 'package:petrofy/services/cloudinary_service.dart';
 import 'package:petrofy/widgets/custom_components.dart';
 import '../../models/user_model.dart';
 import '../../utils/app_colors.dart';
 
-class AdminProfilePage extends StatefulWidget {
+class CustomerProfilePage extends StatefulWidget {
   final UserModel user;
-  const AdminProfilePage({super.key, required this.user});
+  const CustomerProfilePage({super.key, required this.user});
 
   @override
-  State<AdminProfilePage> createState() => _AdminProfilePageState();
+  State<CustomerProfilePage> createState() => _CustomerProfilePageState();
 }
 
-class _AdminProfilePageState extends State<AdminProfilePage> {
+class _CustomerProfilePageState extends State<CustomerProfilePage> {
   bool _isUploading = false;
   late String _displayImage;
 
@@ -30,28 +24,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   void initState() {
     super.initState();
     _displayImage = widget.user.profilePic;
-  }
-
-  // Generic navigator for your dummy buttons
-  void _navigateToPage(String title) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: AppBar(
-            title: Text(title),
-            backgroundColor: AppColors.surface,
-          ),
-          body: Center(
-            child: Text(
-              "$title Module Coming Soon",
-              style: const TextStyle(color: Colors.white60, fontSize: 21),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -76,44 +48,40 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
               padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
               child: Column(
                 children: [
-                  _buildAdminHeader(),
+                  _buildCustomerHeader(),
                   const SizedBox(height: 20),
-                  // STATION OVERVIEW STATS
-                  //   _buildSectionLabel("STATION OVERVIEW"),
-                  //  const SizedBox(height: 15),
-                  // _buildLiveStationStats(),
 
-                  // const SizedBox(height: 15),
+                  // --- CUSTOMER LOYALTY STATS ---
+                  //  _buildSectionLabel("MY REWARDS"),
+                  //   const SizedBox(height: 15),
+                  // _buildLoyaltyStats(),
+                  //  const SizedBox(height: 30),
 
-                  // SYSTEM MANAGEMENT MENU
-                  // --- FUEL & STATION OPERATIONS ---
-                  _buildSectionLabel("STATION OPERATIONS"),
+                  // --- SHOPPING & ACTIVITY ---
+                  _buildSectionLabel("SHOPPING ACTIVITY"),
                   const SizedBox(height: 15),
-
                   _buildMenuButton(
-                    "Sales Payment Approval",
-                    "Review and approve pumper fuel shift payments",
-                    Icons.fact_check_outlined,
+                    "Track Active Orders",
+                    "Real-time status of your current shipments",
+                    Icons.local_shipping_outlined,
                     () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              PaymentApprovalPage(adminUser: widget.user),
+                          builder: (context) => const MyOrdersPage(),
                         ),
                       );
                     },
                   ),
-
                   _buildMenuButton(
-                    "Fuel Rate Control",
-                    "Configure real-time LKR pricing for fuel types",
-                    Icons.app_registration_rounded,
+                    "My Order History",
+                    "View your past lubricant orders and receipts",
+                    Icons.history_rounded,
                     () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const PriceConfigPage(),
+                          builder: (context) => const MyOrdersPage(),
                         ),
                       );
                     },
@@ -121,77 +89,14 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
                   const SizedBox(height: 5),
 
-                  // --- INVENTORY & LOGISTICS ---
-                  _buildSectionLabel("INVENTORY & LOGISTICS"),
+                  // --- ACCOUNT SETTINGS ---
+                  _buildSectionLabel("ACCOUNT SETTINGS"),
                   const SizedBox(height: 15),
-
-                  _buildMenuButton(
-                    "Catalog Management",
-                    "Modify lubricant specifications and retail pricing",
-                    Icons.inventory_2_outlined,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AdminLubricantListPage(),
-                        ),
-                      );
-                    },
-                  ),
-
-                  _buildMenuButton(
-                    "Add New Stocks (GRN)",
-                    "Register incoming stock and update inventory levels",
-                    Icons.add_business_outlined,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LubricantGRNPage(),
-                        ),
-                      );
-                    },
-                  ),
-
-                  _buildMenuButton(
-                    "Pending Online Orders",
-                    "Process active shipments and track delivery status",
-                    Icons
-                        .local_shipping_outlined, // Changed to a more suitable icon
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ManageOrdersPage(),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  // --- ADMINISTRATION ---
-                  _buildSectionLabel("SYSTEM ADMINISTRATION"),
-                  const SizedBox(height: 15),
-
-                  _buildMenuButton(
-                    "User Access Control",
-                    "Manage system permissions for pumpers and staff",
-                    Icons.admin_panel_settings_outlined,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const UserManagementPage(),
-                        ),
-                      );
-                    },
-                  ),
 
                   _buildMenuButton(
                     "Update Profile Image",
                     "Update administrative profile and security photo",
-                    Icons.face_retouching_natural_rounded,
+                    Icons.security_outlined,
                     _handleImageUpload,
                   ),
 
@@ -205,7 +110,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     );
   }
 
-  // --- IMAGE UPLOAD LOGIC ---
+  // --- LOGIC ---
   Future<void> _handleImageUpload() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
@@ -223,14 +128,19 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
             .doc(widget.user.uid)
             .update({'profilePic': url});
         setState(() => _displayImage = url);
-        showCustomSnackBar(context, "Cloud Sync Complete");
+        showCustomSnackBar(context, "Profile Photo Updated");
       }
       if (mounted) setState(() => _isUploading = false);
     }
   }
-  // --- UI COMPONENTS ---
 
-  Widget _buildAdminHeader() {
+  void _comingSoon(String title) {
+    showCustomSnackBar(context, "$title Module Coming Soon");
+  }
+
+  // --- UI COMPONENTS (MATCHED TO ADMIN THEME) ---
+
+  Widget _buildCustomerHeader() {
     return Column(
       children: [
         _buildAvatarSection(),
@@ -247,30 +157,17 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     );
   }
 
-  Widget _buildLiveStationStats() {
-    return StreamBuilder<DocumentSnapshot>(
-      // Pulling the daily summary you requested earlier
-      stream: FirebaseFirestore.instance
-          .collection('fuelSaleHistory')
-          .doc(DateTime.now().toString().substring(0, 10))
-          .snapshots(),
-      builder: (context, snapshot) {
-        return Row(
-          children: [
-            _buildStatTile(
-              "STATION REVENUE",
-              "LKR XXX,XXX",
-              Icons.payments_rounded,
-            ),
-            const SizedBox(width: 15),
-            _buildStatTile(
-              "TANK STATUS",
-              "XX% Healthy",
-              Icons.ev_station_rounded,
-            ),
-          ],
-        );
-      },
+  Widget _buildLoyaltyStats() {
+    return Row(
+      children: [
+        _buildStatTile("PETROFY POINTS", "1,240 Pts", Icons.stars_rounded),
+        const SizedBox(width: 15),
+        _buildStatTile(
+          "MEMBERSHIP",
+          "GOLD TIER",
+          Icons.workspace_premium_rounded,
+        ),
+      ],
     );
   }
 
@@ -395,6 +292,9 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
         radius: 50,
         backgroundImage: NetworkImage(_displayImage),
         backgroundColor: AppColors.surface,
+        child: _isUploading
+            ? const CircularProgressIndicator(color: AppColors.primaryGreen)
+            : null,
       ),
     );
   }

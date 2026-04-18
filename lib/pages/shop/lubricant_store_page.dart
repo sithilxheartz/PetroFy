@@ -110,7 +110,7 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10, top: 15),
+      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 15, top: 15),
       child: TextField(
         onChanged: (v) => setState(() => _searchQuery = v),
         style: const TextStyle(color: Colors.white),

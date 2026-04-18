@@ -10,6 +10,7 @@ import 'package:petrofy/pages/admin/fuel_dashboard.dart';
 import 'package:petrofy/pages/pumper/add_sale_page.dart';
 import 'package:petrofy/pages/pumper/profile_page.dart';
 import 'package:petrofy/pages/pumper/shift_view_page.dart';
+import 'package:petrofy/pages/shop/customer_profile_page.dart';
 import 'package:petrofy/pages/shop/lubricant_store_page.dart';
 import '../utils/app_colors.dart';
 
@@ -89,7 +90,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           LubricantStorePage(),
           const FuelLevelDashboard(),
           const Center(child: Text("Coming Soon...")),
-          PumperProfilePage(user: _currentUser!),
+          CustomerProfilePage(user: _currentUser!),
         ];
     }
   }
