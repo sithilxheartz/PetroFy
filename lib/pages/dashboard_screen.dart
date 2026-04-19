@@ -1,7 +1,5 @@
 // lib/screens/dashboard_screen.dart
-// Main fuel prediction dashboard with 2 tabs:
-//   Tab 1 — Tomorrow's predictions (cards)
-//   Tab 2 — 7-day forecast (line charts)
+// Fuel Prediction Dashboard — uses exact Petrofy AppColors
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -10,6 +8,24 @@ import 'package:shimmer/shimmer.dart';
 
 import '../models/prediction_model.dart';
 import '../services/prediction_service.dart';
+
+// ── Exact AppColors from your codebase ────────────────────────────────────────
+class _C {
+  static const background = Color(0xFF0B0D0C); // Near Black
+  static const surface = Color(0xFF161B19); // Dark Grey-Green
+  static const primaryGreen = Color(0xFF00FF88); // Glowing Green
+  static const secondaryGreen = Color(0xFF00A35C); // Deep Forest Green
+  static const textMain = Color(0xFFFFFFFF);
+  static const textDim = Color(0xFF9E9E9E);
+  static const error = Color(0xFFFF5252);
+  static const warning = Color(0xFFFFAB40);
+
+  // Extra fuel-type colors (complementary to your palette)
+  static const blue = Color(0xFF40C4FF); // petrol
+  static const amber = Color(0xFFFFAB40); // diesel  (reuses warning)
+  static const purple = Color(0xFFCE93D8); // super diesel
+  static const orange = Color(0xFFFF6D00); // low-accuracy indicator
+}
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -20,7 +36,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen>
     with SingleTickerProviderStateMixin {
-
   final _service = PredictionService();
   late TabController _tabs;
 
@@ -28,19 +43,70 @@ class _DashboardScreenState extends State<DashboardScreen>
   bool _loading = true;
   String? _error;
 
-  // ── Colours ───────────────────────────────────────────────────────────────
-  static const _bg      = Color(0xFF0F172A);   // dark navy
-  static const _surface = Color(0xFF1E293B);   // card surface
-  static const _accent  = Color(0xFF10B981);   // emerald green
-  static const _text    = Colors.white;
-  static const _textDim = Color(0xFF94A3B8);
+  // Fuel config — label, icon, color, accuracy badge
+  static const _fuels = [
+    {
+      'key': 'petrol',
+      'label': 'Petrol',
+      'icon': '⚡',
+      'color': _C.blue,
+      'mape': '±7%',
+      'rel': 'high',
+    },
+    {
+      'key': 'diesel',
+      'label': 'Diesel',
+      'icon': '🛢️',
+      'color': _C.amber,
+      'mape': '±14%',
+      'rel': 'medium',
+    },
+    {
+      'key': 'super_diesel',
+      'label': 'Super Diesel',
+      'icon': '🛢️',
+      'color': _C.purple,
+      'mape': '±63%',
+      'rel': 'low',
+    },
+    {
+      'key': 'super_petrol',
+      'label': 'Super Petrol',
+      'icon': '⚡',
+      'color': _C.primaryGreen,
+      'mape': '±50%',
+      'rel': 'low',
+    },
+  ];
 
-  static Color fuelColor(String key) {
-    final c = FuelMeta.fuels.firstWhere((f) => f['key'] == key, orElse: () => FuelMeta.fuels[0]);
-    return Color(c['color'] as int);
+  FuelPrediction _getPred(String key) {
+    final t = _data!.tomorrow;
+    switch (key) {
+      case 'petrol':
+        return t.petrol;
+      case 'super_petrol':
+        return t.superPetrol;
+      case 'diesel':
+        return t.diesel;
+      default:
+        return t.superDiesel;
+    }
   }
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  List<FuelPrediction> _get7Day(String key) {
+    final s = _data!.sevenDays;
+    switch (key) {
+      case 'petrol':
+        return s.petrol;
+      case 'super_petrol':
+        return s.superPetrol;
+      case 'diesel':
+        return s.diesel;
+      default:
+        return s.superDiesel;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -55,378 +121,406 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _load() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final data = await _service.getSummary();
-      setState(() { _data = data; _loading = false; });
+      setState(() {
+        _data = data;
+        _loading = false;
+      });
     } catch (e) {
-      setState(() { _error = e.toString(); _loading = false; });
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
     }
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
+  // ── ROOT BUILD ─────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bg,
-      appBar: _buildAppBar(),
-      body: _loading
-          ? _buildSkeleton()
-          : _error != null
-              ? _buildError()
+      backgroundColor: _C.background,
+      extendBodyBehindAppBar: true,
+      appBar: _appBar(),
+      body: Stack(
+        children: [
+          // Subtle background glow — matches your FuelLevelDashboard style
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _C.primaryGreen.withOpacity(0.05),
+              ),
+            ),
+          ),
+          _loading
+              ? _skeleton()
+              : _error != null
+              ? _errorView()
               : TabBarView(
                   controller: _tabs,
-                  children: [_buildTomorrowTab(), _buildSevenDayTab()],
+                  children: [_tomorrowTab(), _sevenDayTab()],
                 ),
+        ],
+      ),
     );
   }
 
-  // ── AppBar ────────────────────────────────────────────────────────────────
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: _surface,
-      elevation: 0,
-      title: Row(
-        children: [
-          Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(
-              color: _accent.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Center(
-              child: Text('⛽', style: TextStyle(fontSize: 18)),
-            ),
+  // ── APP BAR ────────────────────────────────────────────────────────────────
+  PreferredSizeWidget _appBar() => AppBar(
+    backgroundColor: _C.background.withOpacity(0.5),
+    elevation: 0,
+    title: Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: _C.primaryGreen.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _C.primaryGreen.withOpacity(0.2)),
           ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('EMERALD LANKA',
-                  style: TextStyle(
-                    color: _accent, fontSize: 13,
-                    fontWeight: FontWeight.bold, letterSpacing: 1.5,
-                  )),
-              Text('Hettipola Filling Station',
-                  style: TextStyle(color: _textDim, fontSize: 11)),
-            ],
-          ),
-        ],
-      ),
-      actions: [
-        // Refresh button
-        IconButton(
-          icon: const Icon(Icons.refresh_rounded, color: _accent),
-          onPressed: _loading ? null : _load,
-          tooltip: 'Refresh',
+          child: Icon(Icons.insights),
         ),
-        // More options
-        PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert, color: _textDim),
-          color: _surface,
-          onSelected: (v) {
-            if (v == 'retrain') _showRetrainDialog();
-            if (v == 'about')   _showAboutDialog();
-          },
-          itemBuilder: (_) => [
-            _menuItem('retrain', Icons.model_training, 'Retrain Models'),
-            _menuItem('about',   Icons.info_outline,   'About'),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'FUEL SALES PREDICTOR',
+              style: TextStyle(
+             //   color: _C.primaryGreen,
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+              ),
+            ),
+            const Text(
+              'EMERALD LANKA FILLING STATION',
+              style: TextStyle(color: _C.textDim, fontSize: 11),
+            ),
           ],
         ),
       ],
-      bottom: TabBar(
-        controller: _tabs,
-        indicatorColor: _accent,
-        indicatorWeight: 3,
-        labelColor: _accent,
-        unselectedLabelColor: _textDim,
-        labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-        tabs: const [
-          Tab(text: '📅  TOMORROW'),
-          Tab(text: '📈  7 DAYS'),
+    ),
+    actions: [
+      IconButton(
+        icon: const Icon(Icons.refresh_rounded, color: _C.primaryGreen),
+        onPressed: _loading ? null : _load,
+      ),
+      PopupMenuButton<String>(
+        icon: const Icon(Icons.more_vert, color: _C.textDim),
+        color: _C.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        onSelected: (v) {
+          if (v == 'retrain') _retrainDialog();
+          if (v == 'about') _aboutDialog();
+        },
+        itemBuilder: (_) => [
+          _pop('retrain', Icons.model_training_rounded, 'Retrain Models'),
+          _pop('about', Icons.info_outline_rounded, 'About'),
         ],
       ),
-    );
-  }
+      const SizedBox(width: 4),
+    ],
+    bottom: TabBar(
+      controller: _tabs,
+      indicatorColor: _C.primaryGreen,
+      indicatorWeight: 2.5,
+      indicatorSize: TabBarIndicatorSize.label,
+      labelColor: _C.primaryGreen,
+      unselectedLabelColor: _C.textDim,
+      labelStyle: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 13,
+        letterSpacing: 0.5,
+      ),
+      tabs: const [
+        Tab(
+          icon: Icon(Icons.calendar_today_rounded, size: 15),
+          text: 'TOMORROW',
+        ),
+        Tab(icon: Icon(Icons.show_chart_rounded, size: 15), text: '7 DAYS'),
+      ],
+    ),
+  );
 
-  PopupMenuItem<String> _menuItem(String v, IconData icon, String label) {
-    return PopupMenuItem(
-      value: v,
-      child: Row(children: [
-        Icon(icon, color: _accent, size: 18),
-        const SizedBox(width: 10),
-        Text(label, style: const TextStyle(color: _text)),
-      ]),
-    );
-  }
+  PopupMenuItem<String> _pop(String v, IconData icon, String label) =>
+      PopupMenuItem(
+        value: v,
+        child: Row(
+          children: [
+            Icon(icon, color: _C.primaryGreen, size: 18),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: const TextStyle(color: _C.textMain, fontSize: 14),
+            ),
+          ],
+        ),
+      );
 
   // ══════════════════════════════════════════════════════════════════════════
   //  TAB 1 — TOMORROW
   // ══════════════════════════════════════════════════════════════════════════
 
-  Widget _buildTomorrowTab() {
+  Widget _tomorrowTab() {
     final t = _data!.tomorrow;
-    final dateStr = DateFormat('EEEE, d MMMM yyyy')
-        .format(DateTime.parse(t.petrol.date));
-
-    final fuels = [
-      ('petrol',       t.petrol,      'Petrol'),
-      ('super_petrol', t.superPetrol, 'Super Petrol'),
-      ('diesel',       t.diesel,      'Diesel'),
-      ('super_diesel', t.superDiesel, 'Super Diesel'),
-    ];
+    final date = DateFormat(
+      'EEEE, d MMMM yyyy',
+    ).format(DateTime.parse(t.petrol.date));
 
     return RefreshIndicator(
       onRefresh: _load,
-      color: _accent,
-      backgroundColor: _surface,
+      color: _C.primaryGreen,
+      backgroundColor: _C.surface,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 175, 20, 120),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            // ── Date header ───────────────────────────────────────────────
+            // ── Date chip ──────────────────────────────────────────────────────
             _card(
-              child: Row(children: [
-                Icon(Icons.calendar_today_rounded, color: _accent, size: 18),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(dateStr,
-                    style: const TextStyle(color: _text, fontSize: 15,
-                        fontWeight: FontWeight.w600)),
-                ),
-                // Data freshness badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: _accent.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(20),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.calendar_today_rounded,
+                    color: _C.primaryGreen,
+                    size: 16,
                   ),
-                  child: Text(
-                    'Updated ${_data!.dataAsOf}',
-                    style: TextStyle(color: _accent, fontSize: 10),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      date,
+                      style: const TextStyle(
+                        color: _C.textMain,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
-                ),
-              ]),
+                  _pill('Updated ${_data!.dataAsOf}', _C.primaryGreen),
+                ],
+              ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
 
-            // ── Total banner ──────────────────────────────────────────────
-            _totalBanner(t.totalLitres),
+            // ── Total banner ───────────────────────────────────────────────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF00A35C), Color(0xFF00FF88)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                //   boxShadow: [
+                //    BoxShadow(
+                //      color: _C.primaryGreen.withOpacity(0.25),
+                //     blurRadius: 20,
+                //     offset: const Offset(0, 6),
+                //     ),
+                //    ],
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'Total Predicted Sales Tomorrow',
+                    style: TextStyle(
+                      color: Colors.black.withOpacity(0.65),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 0),
+                  Text(
+                    '${NumberFormat('#,##0.0').format(t.totalLitres)} L',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 42,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 15),
+            _sLabel('FUEL BREAKDOWN'),
+            const SizedBox(height: 15),
 
-            // ── Individual fuel cards ─────────────────────────────────────
-            ...fuels.map((f) {
-              final key   = f.$1;
-              final pred  = f.$2;
-              final label = f.$3;
-              final color = fuelColor(key);
-              final note  = _data!.accuracyNotes[key];
+            // ── Fuel cards ─────────────────────────────────────────────────────
+            ..._fuels.map((f) {
+              final key = f['key'] as String;
+              final color = f['color'] as Color;
+              final pred = _getPred(key);
+              final isLow = f['rel'] == 'low';
               return _fuelCard(
-                key: key, label: label,
+                icon: f['icon'] as String,
+                label: f['label'] as String,
                 litres: pred.predictedLitres,
-                color: color, note: note,
+                color: color,
+                mape: f['mape'] as String,
+                rel: f['rel'] as String,
+                isLow: isLow,
               );
             }),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
 
-            // ── Accuracy disclaimer ───────────────────────────────────────
-            _accuracyDisclaimer(),
-
+            // ── Accuracy guide ─────────────────────────────────────────────────
+            _card(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sLabel('ACCURACY GUIDE'),
+                  const SizedBox(height: 12),
+                  _guideRow('🛢️ Petrol', '±7%', _C.blue, 'Very reliable'),
+                  _guideRow('🚛 Diesel', '±14%', _C.amber, 'Good for planning'),
+                  _guideRow(
+                    '⚡ Super Petrol',
+                    '±50%',
+                    _C.warning,
+                    'Rough estimate',
+                  ),
+                  _guideRow(
+                    '💎 Super Diesel',
+                    '±63%',
+                    _C.warning,
+                    'Rough estimate',
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Low accuracy for super fuels is due to frequent out-of-stock '
+                    'events. Improves as you add more monthly data.',
+                    style: TextStyle(
+                      color: _C.textDim,
+                      fontSize: 11,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 35),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _totalBanner(double total) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF065F46), Color(0xFF10B981)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: _accent.withOpacity(0.3),
-              blurRadius: 16, offset: const Offset(0, 4))
-        ],
-      ),
-      child: Column(children: [
-        Text('Total Predicted Sales Tomorrow',
-            style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 13)),
-        const SizedBox(height: 8),
-        Text(
-          '${NumberFormat('#,##0.0').format(total)} L',
-          style: const TextStyle(color: Colors.white, fontSize: 38,
-              fontWeight: FontWeight.bold),
-        ),
-      ]),
     );
   }
 
   Widget _fuelCard({
-    required String key,
+    required String icon,
     required String label,
     required double litres,
     required Color color,
-    AccuracyNote? note,
+    required String mape,
+    required String rel,
+    required bool isLow,
   }) {
-    final emoji = FuelMeta.fuels
-        .firstWhere((f) => f['key'] == key)['emoji'] as String;
-    final isLowAccuracy = note?.reliability == 'low';
-
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.25), width: 1),
+        color: _C.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isLow ? _C.warning.withOpacity(0.15) : color.withOpacity(0.1),
+          width: 1.5,
+        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              // Icon circle
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // Icon circle — matches your _buildTankCard / _buildMenuButton style
               Container(
-                width: 44, height: 44,
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Center(
-                    child: Text(emoji, style: const TextStyle(fontSize: 22))),
+                  child: Text(icon, style: const TextStyle(fontSize: 22)),
+                ),
               ),
               const SizedBox(width: 14),
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(label,
-                        style: const TextStyle(color: _textDim, fontSize: 12)),
-                    const SizedBox(height: 2),
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: _C.textDim,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
                     Text(
                       '${NumberFormat('#,##0.0').format(litres)} L',
-                      style: TextStyle(color: color, fontSize: 26,
-                          fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
                     ),
                   ],
                 ),
               ),
-              // Accuracy badge
-              if (note != null)
-                _accuracyBadge(note.reliability, note.mapePct),
-            ]),
 
-            // Low accuracy warning
-            if (isLowAccuracy) ...[
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
-                ),
-                child: Row(children: [
-                  const Icon(Icons.warning_amber_rounded,
-                      color: Colors.orange, size: 14),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(note!.note,
-                        style: const TextStyle(
-                            color: Colors.orange, fontSize: 11)),
-                  ),
-                ]),
-              ),
+              _badge(mape, rel),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _accuracyBadge(String reliability, double mape) {
-    Color badgeColor;
-    String badgeLabel;
-    switch (reliability) {
-      case 'high':
-        badgeColor = _accent; badgeLabel = '±${mape.toStringAsFixed(0)}%';
-        break;
-      case 'medium':
-        badgeColor = Colors.amber; badgeLabel = '±${mape.toStringAsFixed(0)}%';
-        break;
-      default:
-        badgeColor = Colors.orange; badgeLabel = '±${mape.toStringAsFixed(0)}%';
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: badgeColor.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: badgeColor.withOpacity(0.4)),
-      ),
-      child: Text(badgeLabel,
-          style: TextStyle(color: badgeColor,
-              fontSize: 11, fontWeight: FontWeight.w600)),
-    );
-  }
-
-  Widget _accuracyDisclaimer() {
-    return _card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(children: [
-            Icon(Icons.info_outline, color: _textDim, size: 16),
-            SizedBox(width: 8),
-            Text('Accuracy Guide',
-                style: TextStyle(color: _text, fontWeight: FontWeight.w600)),
-          ]),
-          const SizedBox(height: 10),
-          _infoRow('⛽ Petrol',       '±7%',  _accent,       'Very reliable'),
-          _infoRow('🚛 Diesel',       '±14%', Colors.amber,  'Good for planning'),
-          _infoRow('🔋 Super Petrol', '±50%', Colors.orange, 'Rough estimate'),
-          _infoRow('💎 Super Diesel', '±63%', Colors.orange, 'Rough estimate'),
-          const SizedBox(height: 8),
-          Text(
-            'Low accuracy for super fuels is due to out-of-stock days in training data. '
-            'Accuracy improves as you add more monthly data.',
-            style: TextStyle(color: _textDim, fontSize: 11),
           ),
+
+          // Warning banner for low-accuracy fuels
+          if (isLow) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: _C.warning.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _C.warning.withOpacity(0.25)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: _C.warning,
+                    size: 15,
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Rough estimate — high OOS days in training data',
+                      style: TextStyle(color: _C.warning, fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
-    );
-  }
-
-  Widget _infoRow(String label, String pct, Color color, String desc) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(children: [
-        SizedBox(width: 100,
-            child: Text(label, style: const TextStyle(color: _text, fontSize: 12))),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          margin: const EdgeInsets.only(right: 8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(pct, style: TextStyle(color: color, fontSize: 11,
-              fontWeight: FontWeight.bold)),
-        ),
-        Text(desc, style: const TextStyle(color: _textDim, fontSize: 11)),
-      ]),
     );
   }
 
@@ -434,44 +528,47 @@ class _DashboardScreenState extends State<DashboardScreen>
   //  TAB 2 — 7 DAYS
   // ══════════════════════════════════════════════════════════════════════════
 
-  Widget _buildSevenDayTab() {
+  Widget _sevenDayTab() {
     final sd = _data!.sevenDays;
-    final fuelData = [
-      ('petrol',       sd.petrol,      'Petrol'),
-      ('diesel',       sd.diesel,      'Diesel'),
-      ('super_petrol', sd.superPetrol, 'Super Petrol'),
-      ('super_diesel', sd.superDiesel, 'Super Diesel'),
-    ];
-
     return RefreshIndicator(
       onRefresh: _load,
-      color: _accent,
-      backgroundColor: _surface,
+      color: _C.primaryGreen,
+      backgroundColor: _C.surface,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 175, 20, 120),
         child: Column(
           children: [
-            // Combined all-fuels overview chart
-            _combinedOverviewChart(sd),
-            const SizedBox(height: 16),
-            // Individual fuel charts
-            ...fuelData.map((f) => _sevenDayFuelChart(f.$1, f.$2, f.$3)),
+            _overviewBar(sd),
+            const SizedBox(height: 14),
+            ..._fuels.map(
+              (f) => _lineCard(
+                icon: f['icon'] as String,
+                label: f['label'] as String,
+                preds: _get7Day(f['key'] as String),
+                color: f['color'] as Color,
+                mape: f['mape'] as String,
+                rel: f['rel'] as String,
+              ),
+            ),
+                            SizedBox(height: 20,)
           ],
         ),
       ),
     );
   }
 
-  Widget _combinedOverviewChart(SevenDayData sd) {
+  Widget _overviewBar(SevenDayData sd) {
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('7-Day Total Overview',
-              style: TextStyle(color: _text, fontWeight: FontWeight.bold, fontSize: 15)),
+          _sLabel('7-DAY TOTAL OVERVIEW'),
           const SizedBox(height: 4),
-          Text('All fuel types combined', style: TextStyle(color: _textDim, fontSize: 12)),
+          const Text(
+            'All fuel types combined',
+            style: TextStyle(color: _C.textDim, fontSize: 12),
+          ),
           const SizedBox(height: 20),
           SizedBox(
             height: 160,
@@ -479,20 +576,26 @@ class _DashboardScreenState extends State<DashboardScreen>
               BarChartData(
                 gridData: FlGridData(
                   drawVerticalLine: false,
-                  getDrawingHorizontalLine: (_) =>
-                      FlLine(color: Colors.white10, strokeWidth: 1),
+                  getDrawingHorizontalLine: (_) => FlLine(
+                    color: Colors.white.withOpacity(0.05),
+                    strokeWidth: 1,
+                  ),
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
-                  rightTitles:  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles:    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 46,
                       getTitlesWidget: (v, _) => Text(
                         '${(v / 1000).toStringAsFixed(1)}k',
-                        style: const TextStyle(color: _textDim, fontSize: 10),
+                        style: const TextStyle(color: _C.textDim, fontSize: 10),
                       ),
                     ),
                   ),
@@ -501,42 +604,55 @@ class _DashboardScreenState extends State<DashboardScreen>
                       showTitles: true,
                       getTitlesWidget: (v, _) {
                         final i = v.toInt();
-                        if (i < 0 || i >= sd.petrol.length) return const SizedBox();
+                        if (i < 0 || i >= sd.petrol.length)
+                          return const SizedBox();
                         final d = DateTime.parse(sd.petrol[i].date);
                         return Padding(
                           padding: const EdgeInsets.only(top: 4),
-                          child: Text(DateFormat('dd\nEEE').format(d),
-                            style: const TextStyle(color: _textDim, fontSize: 9),
-                            textAlign: TextAlign.center),
+                          child: Text(
+                            DateFormat('dd\nEEE').format(d),
+                            style: const TextStyle(
+                              color: _C.textDim,
+                              fontSize: 9,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         );
                       },
                     ),
                   ),
                 ),
                 barGroups: List.generate(sd.petrol.length, (i) {
-                  final total = sd.petrol[i].predictedLitres
-                      + sd.superPetrol[i].predictedLitres
-                      + sd.diesel[i].predictedLitres
-                      + sd.superDiesel[i].predictedLitres;
-                  return BarChartGroupData(x: i, barRods: [
-                    BarChartRodData(
-                      toY: total,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF065F46), Color(0xFF10B981)],
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
+                  final total =
+                      sd.petrol[i].predictedLitres +
+                      sd.superPetrol[i].predictedLitres +
+                      sd.diesel[i].predictedLitres +
+                      sd.superDiesel[i].predictedLitres;
+                  return BarChartGroupData(
+                    x: i,
+                    barRods: [
+                      BarChartRodData(
+                        toY: total,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF00A35C), Color(0xFF00FF88)],
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                        ),
+                        width: 28,
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      width: 28,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ]);
+                    ],
+                  );
                 }),
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (_) => _surface,
-                    getTooltipItem: (group, _, rod, __) => BarTooltipItem(
+                    getTooltipColor: (_) => _C.surface,
+                    getTooltipItem: (g, _, rod, __) => BarTooltipItem(
                       '${NumberFormat('#,##0').format(rod.toY)} L',
-                      const TextStyle(color: _accent, fontWeight: FontWeight.bold),
+                      const TextStyle(
+                        color: _C.primaryGreen,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -548,130 +664,193 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _sevenDayFuelChart(
-      String key, List<FuelPrediction> preds, String label) {
-    final color = fuelColor(key);
-    final emoji = FuelMeta.fuels.firstWhere((f) => f['key'] == key)['emoji'] as String;
-    final spots = preds.asMap().entries
+  Widget _lineCard({
+    required String icon,
+    required String label,
+    required List<FuelPrediction> preds,
+    required Color color,
+    required String mape,
+    required String rel,
+  }) {
+    final spots = preds
+        .asMap()
+        .entries
         .map((e) => FlSpot(e.key.toDouble(), e.value.predictedLitres))
         .toList();
-    final maxY = preds.map((p) => p.predictedLitres).reduce((a, b) => a > b ? a : b);
-    final minY = preds.map((p) => p.predictedLitres).reduce((a, b) => a < b ? a : b);
-    final note = _data!.accuracyNotes[key];
+    final maxY = preds
+        .map((p) => p.predictedLitres)
+        .reduce((a, b) => a > b ? a : b);
+    final minY = preds
+        .map((p) => p.predictedLitres)
+        .reduce((a, b) => a < b ? a : b);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 14),
       child: _card(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Row(children: [
-              Text(emoji, style: const TextStyle(fontSize: 20)),
-              const SizedBox(width: 10),
-              Text(label,
-                  style: TextStyle(color: color, fontWeight: FontWeight.bold,
-                      fontSize: 15)),
-              const Spacer(),
-              if (note != null) _accuracyBadge(note.reliability, note.mapePct),
-            ]),
-            const SizedBox(height: 16),
+            // Card header
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(icon, style: const TextStyle(fontSize: 20)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                _badge(mape, rel),
+              ],
+            ),
+
+            const SizedBox(height: 18),
 
             // Line chart
             SizedBox(
-              height: 150,
-              child: LineChart(LineChartData(
-                minY: (minY * 0.9).floorToDouble(),
-                maxY: (maxY * 1.1).ceilToDouble(),
-                gridData: FlGridData(
-                  drawVerticalLine: false,
-                  getDrawingHorizontalLine: (_) =>
-                      FlLine(color: Colors.white10, strokeWidth: 1),
-                ),
-                borderData: FlBorderData(show: false),
-                titlesData: FlTitlesData(
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles:   const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true, reservedSize: 48,
-                      getTitlesWidget: (v, _) => Text(
-                        '${(v / 1000).toStringAsFixed(1)}k',
-                        style: const TextStyle(color: _textDim, fontSize: 10),
+              height: 140,
+              child: LineChart(
+                LineChartData(
+                  minY: (minY * 0.88).floorToDouble(),
+                  maxY: (maxY * 1.12).ceilToDouble(),
+                  gridData: FlGridData(
+                    drawVerticalLine: false,
+                    getDrawingHorizontalLine: (_) => FlLine(
+                      color: Colors.white.withOpacity(0.05),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  titlesData: FlTitlesData(
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 46,
+                        getTitlesWidget: (v, _) => Text(
+                          '${(v / 1000).toStringAsFixed(1)}k',
+                          style: const TextStyle(
+                            color: _C.textDim,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (v, _) {
+                          final i = v.toInt();
+                          if (i < 0 || i >= preds.length)
+                            return const SizedBox();
+                          final d = DateTime.parse(preds[i].date);
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              DateFormat('dd\nEEE').format(d),
+                              style: const TextStyle(
+                                color: _C.textDim,
+                                fontSize: 9,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (v, _) {
-                        final i = v.toInt();
-                        if (i < 0 || i >= preds.length) return const SizedBox();
-                        final d = DateTime.parse(preds[i].date);
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(DateFormat('dd\nEEE').format(d),
-                            style: const TextStyle(color: _textDim, fontSize: 9),
-                            textAlign: TextAlign.center),
-                        );
-                      },
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      color: color,
+                      barWidth: 2.5,
+                      dotData: FlDotData(
+                        getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
+                          radius: 4,
+                          color: color,
+                          strokeWidth: 2,
+                          strokeColor: _C.surface,
+                        ),
+                      ),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          colors: [
+                            color.withOpacity(0.18),
+                            color.withOpacity(0),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+                  ],
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipColor: (_) => _C.surface,
+                      getTooltipItems: (s) => s
+                          .map(
+                            (sp) => LineTooltipItem(
+                              '${NumberFormat('#,##0.0').format(sp.y)} L',
+                              TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
                 ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    color: color,
-                    barWidth: 2.5,
-                    dotData: FlDotData(
-                      getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
-                        radius: 4,
-                        color: color,
-                        strokeWidth: 2,
-                        strokeColor: _surface,
-                      ),
-                    ),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        colors: [color.withOpacity(0.2), color.withOpacity(0)],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ],
-                lineTouchData: LineTouchData(
-                  touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (_) => _bg,
-                    getTooltipItems: (spots) => spots.map((s) => LineTooltipItem(
-                      '${NumberFormat('#,##0.0').format(s.y)} L',
-                      TextStyle(color: color, fontWeight: FontWeight.bold),
-                    )).toList(),
-                  ),
-                ),
-              )),
+              ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
 
-            // Data table
+            // Data rows — matches your _buildTankCard footer style
             ...preds.map((p) {
               final d = DateTime.parse(p.date);
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 3),
-                child: Row(children: [
-                  Expanded(
-                    child: Text(DateFormat('EEE, d MMM').format(d),
-                        style: const TextStyle(color: _textDim, fontSize: 12)),
-                  ),
-                  Text(
-                    '${NumberFormat('#,##0.0').format(p.predictedLitres)} L',
-                    style: TextStyle(color: color, fontSize: 12,
-                        fontWeight: FontWeight.w600),
-                  ),
-                ]),
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        DateFormat('EEE, d MMM').format(d),
+                        style: const TextStyle(color: _C.textDim, fontSize: 12),
+                      ),
+                    ),
+                    Text(
+                      '${NumberFormat('#,##0.0').format(p.predictedLitres)} L',
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               );
             }),
           ],
@@ -681,158 +860,178 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  //  LOADING SKELETON
+  //  SKELETON
   // ══════════════════════════════════════════════════════════════════════════
 
-  Widget _buildSkeleton() {
-    return Shimmer.fromColors(
-      baseColor: _surface,
-      highlightColor: const Color(0xFF334155),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          _skeletonBox(height: 56),
+  Widget _skeleton() => Shimmer.fromColors(
+    baseColor: _C.surface,
+    highlightColor: const Color(0xFF1F2824),
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(20, 175, 20, 20),
+      child: Column(
+        children: [
+          _skelBox(56),
           const SizedBox(height: 12),
-          _skeletonBox(height: 100),
+          _skelBox(112),
           const SizedBox(height: 12),
-          _skeletonBox(height: 80),
+          _skelBox(90),
           const SizedBox(height: 12),
-          _skeletonBox(height: 80),
+          _skelBox(90),
           const SizedBox(height: 12),
-          _skeletonBox(height: 80),
+          _skelBox(90),
           const SizedBox(height: 12),
-          _skeletonBox(height: 80),
-        ]),
+          _skelBox(90),
+        ],
       ),
-    );
-  }
+    ),
+  );
 
-  Widget _skeletonBox({required double height}) {
-    return Container(
-      height: height,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(16),
-      ),
-    );
-  }
+  Widget _skelBox(double h) => Container(
+    height: h,
+    width: double.infinity,
+    decoration: BoxDecoration(
+      color: _C.surface,
+      borderRadius: BorderRadius.circular(24),
+    ),
+  );
 
   // ══════════════════════════════════════════════════════════════════════════
-  //  ERROR STATE
+  //  ERROR
   // ══════════════════════════════════════════════════════════════════════════
 
-  Widget _buildError() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80, height: 80,
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.wifi_off_rounded,
-                  color: Colors.red, size: 40),
+  Widget _errorView() => Center(
+    child: Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: _C.error.withOpacity(0.1),
+              shape: BoxShape.circle,
+              border: Border.all(color: _C.error.withOpacity(0.3)),
             ),
-            const SizedBox(height: 20),
-            const Text('Cannot reach prediction server',
-                style: TextStyle(color: _text, fontSize: 18,
-                    fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center),
-            const SizedBox(height: 10),
-            Text(
+            child: const Icon(
+              Icons.wifi_off_rounded,
+              color: _C.error,
+              size: 36,
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Cannot reach prediction server',
+            style: TextStyle(
+              color: _C.textMain,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _C.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
+            ),
+            child: Text(
               _error ?? '',
-              style: const TextStyle(color: _textDim, fontSize: 12),
+              style: const TextStyle(color: _C.textDim, fontSize: 11),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _surface,
-                borderRadius: BorderRadius.circular(12),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _load,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Try Again'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _C.primaryGreen,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: const Text(
-                '💡 Make sure your Python API is running:\n'
-                'uvicorn api.main:app --reload --port 8000\n\n'
-                'Android emulator: use http://10.0.2.2:8000\n'
-                'Physical device: use your PC\'s local IP',
-                style: TextStyle(color: _textDim, fontSize: 11),
-                textAlign: TextAlign.center,
-              ),
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _load,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try Again'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _accent,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 
   // ══════════════════════════════════════════════════════════════════════════
   //  DIALOGS
   // ══════════════════════════════════════════════════════════════════════════
 
-  void _showRetrainDialog() {
+  void _retrainDialog() {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: _surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(children: [
-          Icon(Icons.model_training, color: _accent),
-          SizedBox(width: 10),
-          Text('Retrain Models', style: TextStyle(color: _text)),
-        ]),
+        backgroundColor: _C.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Row(
+          children: [
+            Icon(Icons.model_training_rounded, color: _C.primaryGreen),
+            SizedBox(width: 10),
+            Text(
+              'Retrain Models',
+              style: TextStyle(color: _C.textMain, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
         content: const Text(
-          'This will fetch the latest sales data from Firebase and retrain '
-          'all 4 prediction models.\n\nThe process runs in the background '
-          'and takes 2–3 minutes. Predictions will automatically update when done.',
-          style: TextStyle(color: _textDim, fontSize: 14),
+          'Fetches the latest data from Firebase fuelSaleHistory and '
+          'retrains all 4 prediction models.\n\n'
+          'Runs in the background — takes 2–3 minutes. '
+          'Predictions update automatically when done.',
+          style: TextStyle(color: _C.textDim, fontSize: 14, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: _textDim)),
+            child: const Text('Cancel', style: TextStyle(color: _C.textDim)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: _accent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              backgroundColor: _C.primaryGreen,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
             ),
             onPressed: () async {
               Navigator.pop(ctx);
               try {
                 final msg = await _service.triggerRetrain();
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(msg),
-                    backgroundColor: _accent,
-                    behavior: SnackBarBehavior.floating,
-                  ));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(msg),
+                      backgroundColor: _C.secondaryGreen,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  );
                 }
               } catch (e) {
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Retrain failed: $e'),
-                    backgroundColor: Colors.red,
-                    behavior: SnackBarBehavior.floating,
-                  ));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed: $e'),
+                      backgroundColor: _C.error,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  );
                 }
               }
             },
@@ -843,68 +1042,161 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  void _showAboutDialog() {
+  void _aboutDialog() {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: _surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('About', style: TextStyle(color: _text)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('⛽ Emerald Lanka Fuel Prediction',
-                style: TextStyle(color: _accent, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            _aboutRow('Station', 'Emerald Lanka Filling Station'),
-            _aboutRow('Location', 'Hettipola, Kurunegala'),
-            _aboutRow('Models', '4 XGBoost models'),
-            _aboutRow('Features', '48 engineered features'),
-            _aboutRow('Training data', '${_data?.dataAsOf ?? "-"} (latest)'),
-            _aboutRow('Petrol accuracy', '±7.21%'),
-            _aboutRow('Diesel accuracy', '±13.62%'),
-          ],
+        backgroundColor: _C.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text(
+          'About',
+          style: TextStyle(color: _C.textMain, fontWeight: FontWeight.bold),
+        ),
+        content: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: _C.primaryGreen.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _C.primaryGreen.withOpacity(0.2)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                '⛽ Emerald Lanka Fuel Prediction',
+                style: TextStyle(
+                  color: _C.primaryGreen,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 14),
+              _aRow('Station', 'Emerald Lanka, Hettipola'),
+              _aRow('Models', '4 × XGBoost'),
+              _aRow('Features', '48 engineered'),
+              _aRow('Data up to', _data?.dataAsOf ?? '-'),
+              _aRow('Petrol', '±11.78% CV MAPE'),
+              _aRow('Diesel', '±17.39% CV MAPE'),
+            ],
+          ),
         ),
         actions: [
-          TextButton(
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _C.primaryGreen,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close', style: TextStyle(color: _accent)),
+            child: const Text('Close'),
           ),
         ],
       ),
     );
   }
 
-  Widget _aboutRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(width: 120,
-              child: Text(label, style: const TextStyle(color: _textDim, fontSize: 13))),
-          Expanded(
-            child: Text(value,
-                style: const TextStyle(color: _text, fontSize: 13,
-                    fontWeight: FontWeight.w500)),
-          ),
-        ],
-      ),
-    );
+  // ── Shared helpers ─────────────────────────────────────────────────────────
+
+  Widget _card({required Widget child}) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+    decoration: BoxDecoration(
+      color: _C.surface,
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: _C.primaryGreen.withOpacity(0.07), width: 1.5),
+    ),
+    child: child,
+  );
+
+  Widget _sLabel(String t) => Text(
+    t,
+    style: const TextStyle(
+      color: _C.primaryGreen,
+      fontSize: 10,
+      fontWeight: FontWeight.bold,
+      letterSpacing: 1.5,
+    ),
+  );
+
+  Widget _pill(String t, Color c) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(
+      color: c.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: c.withOpacity(0.3)),
+    ),
+    child: Text(
+      t,
+      style: TextStyle(color: c, fontSize: 10, fontWeight: FontWeight.bold),
+    ),
+  );
+
+  Widget _badge(String mape, String rel) {
+    final c = rel == 'high'
+        ? _C.primaryGreen
+        : rel == 'medium'
+        ? _C.warning
+        : _C.error;
+    return _pill(mape, c);
   }
 
-  // ── Shared card wrapper ───────────────────────────────────────────────────
-  Widget _card({required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 0),
-      decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: child,
-    );
-  }
+  Widget _guideRow(String label, String pct, Color c, String desc) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 110,
+          child: Text(
+            label,
+            style: const TextStyle(color: _C.textMain, fontSize: 12),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          margin: const EdgeInsets.only(right: 10),
+          decoration: BoxDecoration(
+            color: c.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            pct,
+            style: TextStyle(
+              color: c,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Text(desc, style: const TextStyle(color: _C.textDim, fontSize: 11)),
+      ],
+    ),
+  );
+
+  Widget _aRow(String l, String v) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 90,
+          child: Text(
+            l,
+            style: const TextStyle(color: _C.textDim, fontSize: 12),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            v,
+            style: const TextStyle(
+              color: _C.textMain,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
