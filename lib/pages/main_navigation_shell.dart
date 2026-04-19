@@ -7,6 +7,7 @@ import 'package:petrofy/models/user_model.dart'; // Ensure this import exists
 import 'package:petrofy/pages/admin/add_order_page.dart';
 import 'package:petrofy/pages/admin/admin_profile_page.dart';
 import 'package:petrofy/pages/admin/fuel_dashboard.dart';
+import 'package:petrofy/pages/dashboard_screen.dart';
 import 'package:petrofy/pages/pumper/add_sale_page.dart';
 import 'package:petrofy/pages/pumper/profile_page.dart';
 import 'package:petrofy/pages/pumper/shift_view_page.dart';
@@ -74,7 +75,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       case 'manager':
         return [
           const FuelLevelDashboard(),
-          LubricantStorePage(),
+          DashboardScreen(),
           AddOrderPage(adminUser: _currentUser!),
           AdminProfilePage(user: _currentUser!), // Pass actual user
         ];
