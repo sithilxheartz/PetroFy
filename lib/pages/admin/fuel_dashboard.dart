@@ -89,7 +89,7 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
   Widget _buildTankCard(FuelTankModel tank) {
     double percentage = (tank.currentQuantity / tank.capacity) * 100;
     bool isLow = percentage < 20; // Alert if below 20%
-    Color statusColor = isLow ? AppColors.error : AppColors.primaryGreen;
+    Color statusColor = isLow ? const Color.fromARGB(202, 255, 82, 82) : const Color.fromARGB(180, 0, 255, 136);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 15),

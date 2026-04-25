@@ -6,7 +6,7 @@ class AppColors {
   static const Color surface = Color(0xFF161B19);    // Dark Grey-Green
   
   // AI Fuel Green Accents
-  static const Color primaryGreen = Color(0xFF00FF88);   // Glowing Green
+  static const Color primaryGreen = Color.fromARGB(235, 0, 255, 136);   // Glowing Green
   static const Color secondaryGreen = Color(0xFF00A35C); // Deep Forest Green
   
   // Text Colors

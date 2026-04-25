@@ -115,7 +115,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
                   _buildMenuButton(
                     "Sales Payment Approval",
-                    "Review and approve pumper fuel shift payments",
+                    "Review pumper fuel shift payments",
                     Icons.fact_check_outlined,
                     () {
                       Navigator.push(
@@ -164,7 +164,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
                   _buildMenuButton(
                     "Catalog Management",
-                    "Modify lubricant specifications and retail pricing",
+                    "Modify lubricant specifications & pricing",
                     Icons.inventory_2_outlined,
                     () {
                       Navigator.push(
@@ -178,7 +178,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
                   _buildMenuButton(
                     "Add New Product Stocks (GRN)",
-                    "Register incoming stock and update inventory levels",
+                    "Register incoming inventory stock levels",
                     Icons.add_business_outlined,
                     () {
                       Navigator.push(
@@ -192,7 +192,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
                   _buildMenuButton(
                     "Pending Online Orders",
-                    "Process active shipments and track delivery status",
+                    "Process active shipments & track deliveries",
                     Icons
                         .local_shipping_outlined, // Changed to a more suitable icon
                     () {
@@ -213,7 +213,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
                   _buildMenuButton(
                     "User Access Control",
-                    "Manage system permissions for pumpers and staff",
+                    "Manage system permissions for users",
                     Icons.admin_panel_settings_outlined,
                     () {
                       Navigator.push(
@@ -227,7 +227,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
                   _buildMenuButton(
                     "Update Profile Image",
-                    "Update administrative profile and security photo",
+                    "Update administrative profile photo",
                     Icons.face_retouching_natural_rounded,
                     _handleImageUpload,
                   ),
