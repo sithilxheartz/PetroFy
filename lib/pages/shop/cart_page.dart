@@ -34,14 +34,14 @@ class CartPage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 15, top: 8, bottom: 8),
             child: SizedBox(
-              width: 140,
+              width: 145,
               height: 35,
               child: TextButton.icon(
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MyOrdersPage())),
                 icon: const Icon(Icons.assignment_outlined, color: Colors.white, size: 16),
                 label: const Text(
                   "MY ORDERS",
-                  style: TextStyle(color: Colors.white, fontSize: 12),
+                  style: TextStyle(color: Colors.white),
                 ),
                 style: TextButton.styleFrom(
                   backgroundColor: AppColors.surface,

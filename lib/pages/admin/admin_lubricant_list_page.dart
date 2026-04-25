@@ -195,7 +195,7 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
       backgroundColor: AppColors.background,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("PRODUCT INVENTORY", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21)),
+        title: const Text("INVENTORY", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21)),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
         actions: [
@@ -206,7 +206,7 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
               child: TextButton.icon(
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddLubricantPage())),
                 icon: const Icon(Icons.add_business_outlined, color: Colors.white, size: 18),
-                label: const Text("NEW ITEM", style: TextStyle(color: Colors.white, fontSize: 12)),
+                label: const Text("NEW ITEM", style: TextStyle(color: Colors.white, )),
                 style: TextButton.styleFrom(
                   backgroundColor: AppColors.surface,
                   shape: RoundedRectangleBorder(
@@ -264,7 +264,7 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.5),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1)),
       ),

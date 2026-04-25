@@ -4,9 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:petrofy/models/user_model.dart'; // Ensure this import exists
-import 'package:petrofy/pages/admin/add_order_page.dart';
 import 'package:petrofy/pages/admin/admin_profile_page.dart';
 import 'package:petrofy/pages/admin/fuel_dashboard.dart';
+import 'package:petrofy/pages/reports/reporting_hub_page.dart';
 import 'package:petrofy/pages/dashboard_screen.dart';
 import 'package:petrofy/pages/pumper/add_sale_page.dart';
 import 'package:petrofy/pages/pumper/profile_page.dart';
@@ -76,7 +76,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         return [
           const FuelLevelDashboard(),
           DashboardScreen(),
-          AddOrderPage(adminUser: _currentUser!),
+          ReportingHubPage(adminUser: _currentUser!),
           AdminProfilePage(user: _currentUser!), // Pass actual user
         ];
       case 'pumper':
@@ -101,8 +101,8 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     if (widget.userRole == 'admin' || widget.userRole == 'manager') {
       return const [
         GButton(icon: Icons.local_gas_station_outlined, text: 'Stock'),
+        GButton(icon: Icons.insights, text: 'AI'),
         GButton(icon: Icons.bar_chart_outlined, text: 'Insights'),
-        GButton(icon: Icons.add_business_outlined, text: 'Order'),
         GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     } else if (widget.userRole == 'pumper') {

@@ -2,8 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petrofy/home_page.dart';
-import 'package:petrofy/pages/admin/add_lubricant_page.dart';
+import 'package:petrofy/pages/admin/add_order_page.dart';
 import 'package:petrofy/pages/admin/admin_lubricant_list_page.dart';
+import 'package:petrofy/pages/reports/fuel_orders_report_page.dart';
+import 'package:petrofy/pages/reports/fuel_sales_reports_page.dart';
 import 'package:petrofy/pages/admin/lubricant_grn_page.dart';
 import 'package:petrofy/pages/admin/manage_orders_page.dart';
 import 'package:petrofy/pages/admin/payment_approval_page.dart';
@@ -73,20 +75,41 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
           Positioned(top: -50, right: -50, child: _buildGlow()),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               child: Column(
                 children: [
                   _buildAdminHeader(),
                   const SizedBox(height: 20),
-                  // STATION OVERVIEW STATS
-                  //   _buildSectionLabel("STATION OVERVIEW"),
-                  //  const SizedBox(height: 15),
-                  // _buildLiveStationStats(),
 
-                  // const SizedBox(height: 15),
-
-                  // SYSTEM MANAGEMENT MENU
-                  // --- FUEL & STATION OPERATIONS ---
+                  _buildSectionLabel("REPORTS & INSIGHTS"),
+                  const SizedBox(height: 15),
+                  _buildMenuButton(
+                    "Fuel Sales Report",
+                    "Configure real-time LKR pricing for fuel types",
+                    Icons.report,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const FuelReportsPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
+                    "Fuel Orders Report",
+                    "Configure real-time LKR pricing for fuel types",
+                    Icons.report,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const FuelOrdersReportPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 5),
                   _buildSectionLabel("STATION OPERATIONS"),
                   const SizedBox(height: 15),
 
@@ -100,6 +123,20 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                         MaterialPageRoute(
                           builder: (context) =>
                               PaymentApprovalPage(adminUser: widget.user),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
+                    "Add New Fuel Stock (GRN)",
+                    "Register incoming new fuel orders",
+                    Icons.add_business_outlined,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AddOrderPage(adminUser: widget.user),
                         ),
                       );
                     },
@@ -140,7 +177,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   ),
 
                   _buildMenuButton(
-                    "Add New Stocks (GRN)",
+                    "Add New Product Stocks (GRN)",
                     "Register incoming stock and update inventory levels",
                     Icons.add_business_outlined,
                     () {
@@ -334,11 +371,14 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.surface.withOpacity(0.6),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(
+              color: AppColors.primaryGreen.withOpacity(0.1),
+              width: 1.5,
+            ),
           ),
           child: Row(
             children: [

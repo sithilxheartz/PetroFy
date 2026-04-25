@@ -137,7 +137,7 @@ class _PaymentApprovalPageState extends State<PaymentApprovalPage> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.5),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
        //   color: _getStatusColor(status).withOpacity(0.1),

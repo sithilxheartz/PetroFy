@@ -39,7 +39,7 @@ class _LubricantStorePageState extends State<LubricantStorePage> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
-          "PETROFY STORE",
+          "PΣTROFY STORE",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 21,

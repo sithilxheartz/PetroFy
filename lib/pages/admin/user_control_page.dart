@@ -184,9 +184,9 @@ Widget _buildSearchBar() {
   Widget _buildUserCard(String id, String name, String email, String role) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.5),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
        //   color: _getStatusColor(status).withOpacity(0.1),

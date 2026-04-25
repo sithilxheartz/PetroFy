@@ -80,10 +80,10 @@ class _AddOrderPageState extends State<AddOrderPage> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
-          "NEW FUEL ORDER",
+          "ADD FUEL ORDER",
           style: TextStyle(
             fontWeight: FontWeight.bold,
-                  fontSize: 21,
+            fontSize: 21,
             letterSpacing: 0,
           ),
         ),
@@ -94,7 +94,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
           Padding(
             padding: const EdgeInsets.only(right: 15, top: 8, bottom: 8),
             child: Container(
-              width: 155,
+              width: 130,
               height: 35,
               child: TextButton.icon(
                 onPressed: _showHistoryPopup,
@@ -107,7 +107,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
                   "HISTORY",
                   style: TextStyle(
                     color: Colors.white,
-                 //   fontWeight: FontWeight.bold,
+                    //   fontWeight: FontWeight.bold,
                   ),
                 ),
                 style: TextButton.styleFrom(
@@ -415,7 +415,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: Container(
           height: MediaQuery.of(context).size.height * 0.8,
           decoration: const BoxDecoration(
@@ -466,8 +466,8 @@ class _AddOrderPageState extends State<AddOrderPage> {
         dropdownColor: AppColors.surface,
         style: TextStyle(
           color: Colors.white,
-       //   fontSize: 14,
-               fontFamily: GoogleFonts.poppins().fontFamily,
+          //   fontSize: 14,
+          fontFamily: GoogleFonts.poppins().fontFamily,
           fontWeight: FontWeight.w500,
         ),
         decoration: const InputDecoration(border: InputBorder.none),
