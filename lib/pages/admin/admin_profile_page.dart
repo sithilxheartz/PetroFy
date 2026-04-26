@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:petrofy/home_page.dart';
 import 'package:petrofy/pages/admin/add_order_page.dart';
 import 'package:petrofy/pages/admin/admin_lubricant_list_page.dart';
+import 'package:petrofy/pages/admin/send_notification_page.dart';
 import 'package:petrofy/pages/reports/fuel_orders_report_page.dart';
 import 'package:petrofy/pages/reports/fuel_sales_reports_page.dart';
 import 'package:petrofy/pages/admin/lubricant_grn_page.dart';
@@ -86,7 +87,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   _buildMenuButton(
                     "Fuel Sales Report",
                     "Configure real-time LKR pricing for fuel types",
-                    Icons.report,
+                      Icons.bar_chart_rounded,
                     () {
                       Navigator.push(
                         context,
@@ -99,7 +100,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   _buildMenuButton(
                     "Fuel Orders Report",
                     "Configure real-time LKR pricing for fuel types",
-                    Icons.report,
+                      Icons.bar_chart_rounded,
                     () {
                       Navigator.push(
                         context,
@@ -211,6 +212,19 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   _buildSectionLabel("SYSTEM ADMINISTRATION"),
                   const SizedBox(height: 15),
 
+                  _buildMenuButton(
+                    "Send Broadcast Message",
+                    "Send Special notification for users",
+                    Icons.notification_add,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SendNotificationPage(),
+                        ),
+                      );
+                    },
+                  ),
                   _buildMenuButton(
                     "User Access Control",
                     "Manage system permissions for users",
@@ -371,7 +385,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(15),

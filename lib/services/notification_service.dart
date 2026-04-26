@@ -36,7 +36,7 @@ class NotificationService {
     });
   }
 
-  static Future<void> saveTokenToFirestore() async {
+static Future<void> saveTokenToFirestore() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
@@ -50,16 +50,15 @@ class NotificationService {
 
     final role = userDoc.data()?['role'] ?? 'customer';
 
-    if (role == 'customer') {
-      await FirebaseFirestore.instance
-          .collection('fcm_tokens')
-          .doc(user.uid)
-          .set({
-        'token': token,
-        'role': role,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-    }
+    // ✅ Save tokens for customers, admins AND pumpers
+    await FirebaseFirestore.instance
+        .collection('fcm_tokens')
+        .doc(user.uid)
+        .set({
+      'token': token,
+      'role': role,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   static Future<void> _showLocalNotification(RemoteMessage message) async {
