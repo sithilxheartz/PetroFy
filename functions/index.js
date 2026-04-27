@@ -20,7 +20,7 @@ exports.notifyNewProduct = onDocumentCreated(
 
     const response = await admin.messaging().sendEachForMulticast({
       notification: {
-        title: "🆕 New Product Available!",
+        title: "New Product Available!",
         body: `${product.name} by ${product.brand} is now in stock!`,
       },
       data: { screen: "shop" },
@@ -52,7 +52,7 @@ exports.notifyAdminNewSale = onDocumentCreated(
 
     const response = await admin.messaging().sendEachForMulticast({
       notification: {
-        title: "⛽ New Fuel Sale Recorded",
+        title: "New Fuel Sale Recorded!",
         body: `${sale.pumperName} sold ${sale.soldQuantity}L of ${sale.fuelType} — LKR ${sale.soldTotalPrice.toFixed(2)}`,
       },
       data: { screen: "sales" },
@@ -90,10 +90,10 @@ exports.notifyPumperSaleApproved = onDocumentUpdated(
     let body = "";
 
     if (after.status === "payment received") {
-      title = "✅ Payment Confirmed!";
+      title = "Fuel Payment Confirmed!";
       body = `Your ${after.fuelType} sale of LKR ${after.soldTotalPrice.toFixed(2)} has been received by ${after.paymentReceiverName}.`;
     } else if (after.status === "added to safe") {
-      title = "🔒 Sale Completed!";
+      title = "Fuel Sale Completed!";
       body = `Your ${after.fuelType} sale of LKR ${after.soldTotalPrice.toFixed(2)} has been added to the safe.`;
     } else {
       return null;
@@ -125,7 +125,7 @@ exports.notifyShiftBooked = onDocumentCreated(
     if (pumperTokenDoc.exists) {
       await admin.messaging().send({
         notification: {
-          title: "✅ Shift Booked Successfully!",
+          title: "Shift Booked Successfully!",
           body: `Your ${shift.shiftType} on ${new Date(shift.date.toDate()).toDateString()} at ${shift.pumpNumber} is confirmed!`,
         },
         data: { screen: "shifts" },
@@ -144,7 +144,7 @@ exports.notifyShiftBooked = onDocumentCreated(
 
       await admin.messaging().sendEachForMulticast({
         notification: {
-          title: "📋 New Shift Scheduled",
+          title: "New Shift Scheduled",
           body: `${shift.pumperName} booked ${shift.shiftType} at ${shift.pumpNumber} on ${new Date(shift.date.toDate()).toDateString()}`,
         },
         data: { screen: "shifts" },
@@ -230,7 +230,7 @@ exports.notifyNewOrder = onDocumentCreated(
 
       await admin.messaging().sendEachForMulticast({
         notification: {
-          title: "🛒 New Order Received!",
+          title: "New Online Order Received!",
           body: `${order.customerName} placed an order for LKR ${order.total}. Order ID: ${orderId}`,
         },
         data: { screen: "orders", orderId: orderId },
@@ -247,7 +247,7 @@ exports.notifyNewOrder = onDocumentCreated(
     if (customerTokenDoc.exists) {
       await admin.messaging().send({
         notification: {
-          title: "🎉 Order Placed Successfully!",
+          title: "Order Placed Successfully!",
           body: `Hi ${order.customerName}! Your order of LKR ${order.total} has been placed. We'll prepare it shortly!`,
         },
         data: { screen: "orders", orderId: orderId },
