@@ -144,7 +144,7 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                     ),
                     const SizedBox(height: 15),
                     _buildReviewList(),
-                                 const SizedBox(height: 100),
+                                 const SizedBox(height: 140),
                   ],
                 ),
               ),

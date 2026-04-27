@@ -31,7 +31,8 @@ class AuthService {
         mobileNumber: mobileNumber,
         dob: dob,
         role: 'customer', // Default role is always customer
-        joinedDate: DateTime.now(), profilePic: '',
+        joinedDate: DateTime.now(),
+        profilePic: '',
       );
 
       // C. Save User Data to Firestore
@@ -75,6 +76,18 @@ class AuthService {
     } catch (e) {
       print(e.toString());
       return null;
+    }
+  }
+
+  // Inside your AuthService class
+  Future<String?> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      return e.message; // Return the error message from Firebase
+    } catch (e) {
+      return "An unexpected error occurred.";
     }
   }
 

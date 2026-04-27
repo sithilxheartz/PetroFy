@@ -363,20 +363,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     );
   }
 
-  Widget _buildAvatarSection() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.primaryGreen, width: 2),
-      ),
-      child: CircleAvatar(
-        radius: 50,
-        backgroundImage: NetworkImage(_displayImage),
-        backgroundColor: AppColors.surface,
-      ),
-    );
-  }
 
   Widget _buildGlow() {
     return Container(
