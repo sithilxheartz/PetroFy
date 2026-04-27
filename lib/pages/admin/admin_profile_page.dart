@@ -211,7 +211,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   // --- ADMINISTRATION ---
                   _buildSectionLabel("SYSTEM ADMINISTRATION"),
                   const SizedBox(height: 15),
-
                   _buildMenuButton(
                     "Send Broadcast Message",
                     "Send Special notification for users",

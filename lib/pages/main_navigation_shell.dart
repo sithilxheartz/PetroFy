@@ -90,7 +90,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         return [
           LubricantStorePage(),
           const FuelLevelDashboard(),
-          const Center(child: Text("Coming Soon...")),
           CustomerProfilePage(user: _currentUser!),
         ];
     }
@@ -116,7 +115,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       return const [
         GButton(icon: Icons.store, text: 'Store'),
         GButton(icon: Icons.local_gas_station_outlined, text: 'Fuel'),
-        GButton(icon: Icons.newspaper, text: 'News'),
         GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     }

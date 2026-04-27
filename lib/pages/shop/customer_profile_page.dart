@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petrofy/home_page.dart';
-import 'package:petrofy/pages/shop/my_orders_page.dart';
 import 'package:petrofy/services/cloudinary_service.dart';
 import 'package:petrofy/widgets/custom_components.dart';
+import 'package:petrofy/pages/shop/my_orders_page.dart';
 import '../../models/user_model.dart';
 import '../../utils/app_colors.dart';
 
@@ -24,6 +24,30 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
   void initState() {
     super.initState();
     _displayImage = widget.user.profilePic;
+  }
+
+  // --- IMAGE UPLOAD LOGIC ---
+  Future<void> _handleImageUpload() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+    );
+
+    if (image != null && mounted) {
+      setState(() => _isUploading = true);
+      String? url = await CloudinaryService().uploadProfileImage(image);
+
+      if (url != null && mounted) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.user.uid)
+            .update({'profilePic': url});
+        setState(() => _displayImage = url);
+        showCustomSnackBar(context, "Profile Photo Updated");
+      }
+      if (mounted) setState(() => _isUploading = false);
+    }
   }
 
   @override
@@ -51,56 +75,19 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
                   _buildCustomerHeader(),
                   const SizedBox(height: 20),
 
-                  // --- CUSTOMER LOYALTY STATS ---
-                  //  _buildSectionLabel("MY REWARDS"),
-                  //   const SizedBox(height: 15),
-                  // _buildLoyaltyStats(),
-                  //  const SizedBox(height: 30),
-
-                  // --- SHOPPING & ACTIVITY ---
                   _buildSectionLabel("SHOPPING ACTIVITY"),
                   const SizedBox(height: 15),
                   _buildMenuButton(
-                    "Track Active Orders",
-                    "Real-time status of your current shipments",
-                    Icons.local_shipping_outlined,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MyOrdersPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuButton(
                     "My Order History",
-                    "View your past lubricant orders and receipts",
+                    "View past lubricant orders and receipts",
                     Icons.history_rounded,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MyOrdersPage(),
-                        ),
-                      );
-                    },
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MyOrdersPage(),
+                      ),
+                    ),
                   ),
-
-                  const SizedBox(height: 5),
-
-                  // --- ACCOUNT SETTINGS ---
-                  _buildSectionLabel("ACCOUNT SETTINGS"),
-                  const SizedBox(height: 15),
-
-                  _buildMenuButton(
-                    "Update Profile Image",
-                    "Update administrative profile and security photo",
-                  Icons.face_retouching_natural_rounded,
-                    _handleImageUpload,
-                  ),
-
-                  const SizedBox(height: 10),
                 ],
               ),
             ),
@@ -110,40 +97,58 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
     );
   }
 
-  // --- LOGIC ---
-  Future<void> _handleImageUpload() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 50,
-    );
-
-    if (image != null && mounted) {
-      setState(() => _isUploading = true);
-      String? url = await CloudinaryService().uploadProfileImage(image);
-
-      if (url != null && mounted) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(widget.user.uid)
-            .update({'profilePic': url});
-        setState(() => _displayImage = url);
-        showCustomSnackBar(context, "Profile Photo Updated");
-      }
-      if (mounted) setState(() => _isUploading = false);
-    }
-  }
-
-  void _comingSoon(String title) {
-    showCustomSnackBar(context, "$title Module Coming Soon");
-  }
-
-  // --- UI COMPONENTS (MATCHED TO ADMIN THEME) ---
-
+  // --- UPDATED AVATAR SECTION WITH PLUS ICON ---
   Widget _buildCustomerHeader() {
     return Column(
       children: [
-        _buildAvatarSection(),
+        Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.primaryGreen.withOpacity(0.2),
+                  width: 2,
+                ),
+              ),
+              child: CircleAvatar(
+                radius: 55,
+                backgroundImage: NetworkImage(_displayImage),
+                backgroundColor: AppColors.surface,
+                child: _isUploading
+                    ? const CircularProgressIndicator(
+                        color: AppColors.primaryGreen,
+                      )
+                    : null,
+              ),
+            ),
+            // The Plus Icon Overlay
+            if (!_isUploading)
+              Positioned(
+                bottom: 5,
+                right: 5,
+                child: GestureDetector(
+                  onTap: _handleImageUpload,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryGreen,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: Colors.black45, blurRadius: 5),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.add_a_photo_rounded,
+                      size: 18,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
         const SizedBox(height: 15),
         Text(
           "${widget.user.firstName} ${widget.user.lastName}",
@@ -157,20 +162,7 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
     );
   }
 
-  Widget _buildLoyaltyStats() {
-    return Row(
-      children: [
-        _buildStatTile("PETROFY POINTS", "1,240 Pts", Icons.stars_rounded),
-        const SizedBox(width: 15),
-        _buildStatTile(
-          "MEMBERSHIP",
-          "GOLD TIER",
-          Icons.workspace_premium_rounded,
-        ),
-      ],
-    );
-  }
-
+  // --- UI HELPERS ---
   Widget _buildSectionLabel(String label) {
     return Align(
       alignment: Alignment.centerLeft,
@@ -181,39 +173,6 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
           fontSize: 10,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatTile(String label, String val, IconData icon) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: AppColors.primaryGreen, size: 24),
-            const SizedBox(height: 12),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.textDim,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              val,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-          ],
         ),
       ),
     );
@@ -231,11 +190,14 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.surface.withOpacity(0.6),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(
+              color: AppColors.primaryGreen.withOpacity(0.1),
+              width: 1.5,
+            ),
           ),
           child: Row(
             children: [
@@ -277,24 +239,6 @@ class _CustomerProfilePageState extends State<CustomerProfilePage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAvatarSection() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.primaryGreen, width: 2),
-      ),
-      child: CircleAvatar(
-        radius: 50,
-        backgroundImage: NetworkImage(_displayImage),
-        backgroundColor: AppColors.surface,
-        child: _isUploading
-            ? const CircularProgressIndicator(color: AppColors.primaryGreen)
-            : null,
       ),
     );
   }
