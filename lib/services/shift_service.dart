@@ -54,4 +54,24 @@ class ShiftService {
             .map((doc) => ShiftModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
             .toList());
   }
+// Fetches shifts for a specific pumper within a defined date range
+  Stream<List<ShiftModel>> getShiftsReport({
+    required String pumperId,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) {
+    // Set start of day and end of day to capture full data
+    DateTime start = DateTime(startDate.year, startDate.month, startDate.day, 0, 0, 0);
+    DateTime end = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+
+    return _shiftCollection
+        .where('pumperId', isEqualTo: pumperId)
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(end))
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((doc) => ShiftModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+            .toList());
+  }
 }

@@ -12,6 +12,7 @@ import 'package:petrofy/pages/admin/manage_orders_page.dart';
 import 'package:petrofy/pages/admin/payment_approval_page.dart';
 import 'package:petrofy/pages/admin/price_config_page.dart';
 import 'package:petrofy/pages/admin/user_control_page.dart';
+import 'package:petrofy/pages/reports/shift_report_page.dart';
 import 'package:petrofy/services/cloudinary_service.dart';
 import 'package:petrofy/widgets/custom_components.dart';
 import '../../models/user_model.dart';
@@ -110,6 +111,20 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                       );
                     },
                   ),
+                  _buildMenuButton(
+                    "Shift Roster Report",
+                    "Configure real-time LKR pricing for fuel types",
+                      Icons.bar_chart_rounded,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ShiftReportPage(),
+                        ),
+                      );
+                    },
+                  ),
+
                   const SizedBox(height: 5),
                   _buildSectionLabel("STATION OPERATIONS"),
                   const SizedBox(height: 15),
@@ -211,8 +226,9 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   // --- ADMINISTRATION ---
                   _buildSectionLabel("SYSTEM ADMINISTRATION"),
                   const SizedBox(height: 15),
+
                   _buildMenuButton(
-                    "Send Broadcast Message",
+                    "Send Broadcast Notification",
                     "Send Special notification for users",
                     Icons.notification_add,
                     () {

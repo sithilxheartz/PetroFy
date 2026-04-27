@@ -23,8 +23,22 @@ class _FuelOrdersReportPageState extends State<FuelOrdersReportPage> {
   bool _isExporting = false;
 
   Future<Map<String, dynamic>> _fetchOrderReportData() async {
-    DateTime start = DateTime(_selectedRange.start.year, _selectedRange.start.month, _selectedRange.start.day, 0, 0, 0);
-    DateTime end = DateTime(_selectedRange.end.year, _selectedRange.end.month, _selectedRange.end.day, 23, 59, 59);
+    DateTime start = DateTime(
+      _selectedRange.start.year,
+      _selectedRange.start.month,
+      _selectedRange.start.day,
+      0,
+      0,
+      0,
+    );
+    DateTime end = DateTime(
+      _selectedRange.end.year,
+      _selectedRange.end.month,
+      _selectedRange.end.day,
+      23,
+      59,
+      59,
+    );
 
     QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('fuelOrders')
@@ -42,7 +56,9 @@ class _FuelOrdersReportPageState extends State<FuelOrdersReportPage> {
       totalVolume += qty;
 
       orders.add({
-        'date': DateFormat('dd MMM yyyy, hh:mm a').format((data['orderDate'] as Timestamp).toDate()),
+        'date': DateFormat(
+          'dd MMM yyyy, hh:mm a',
+        ).format((data['orderDate'] as Timestamp).toDate()),
         'fuelType': data['fuelType'] ?? "N/A",
         'qty': qty,
         'bowser': data['bowserNumber'] ?? "N/A",
@@ -72,7 +88,6 @@ class _FuelOrdersReportPageState extends State<FuelOrdersReportPage> {
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
-
       ),
       body: Stack(
         children: [
@@ -86,22 +101,36 @@ class _FuelOrdersReportPageState extends State<FuelOrdersReportPage> {
                     future: _fetchOrderReportData(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen));
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primaryGreen,
+                          ),
+                        );
                       }
-                      if (!snapshot.hasData || (snapshot.data!['orders'] as List).isEmpty) {
-                        return const Center(child: Text("No records found", style: TextStyle(color: AppColors.textDim)));
+                      if (!snapshot.hasData ||
+                          (snapshot.data!['orders'] as List).isEmpty) {
+                        return const Center(
+                          child: Text(
+                            "No records found",
+                            style: TextStyle(color: AppColors.textDim),
+                          ),
+                        );
                       }
 
                       final data = snapshot.data!;
-                      final orders = data['orders'] as List<Map<String, dynamic>>;
+                      final orders =
+                          data['orders'] as List<Map<String, dynamic>>;
 
                       return Column(
                         children: [
                           Expanded(
                             child: ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
                               itemCount: orders.length,
-                              itemBuilder: (context, index) => _buildProcurementCard(orders[index]),
+                              itemBuilder: (context, index) =>
+                                  _buildProcurementCard(orders[index]),
                             ),
                           ),
                           _buildSummaryFooter(data),
@@ -124,7 +153,10 @@ class _FuelOrdersReportPageState extends State<FuelOrdersReportPage> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
+        border: Border.all(
+          color: AppColors.primaryGreen.withOpacity(0.1),
+          width: 1.5,
+        ),
       ),
       child: Column(
         children: [
@@ -132,21 +164,41 @@ class _FuelOrdersReportPageState extends State<FuelOrdersReportPage> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: AppColors.primaryGreen.withOpacity(0.1),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(15),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(order['fuelType'], style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14)),
+                Text(
+                  order['fuelType'],
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
-                    color: order['status'] == 'pending' ? Colors.orange.withOpacity(0.2) : Colors.blue.withOpacity(0.2),
+                    color: order['status'] == 'pending'
+                        ? Colors.orange.withOpacity(0.2)
+                        : Colors.blue.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(5),
                   ),
                   child: Text(
                     order['status'].toUpperCase(),
-                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: order['status'] == 'pending' ? Colors.orange : Colors.blue),
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: order['status'] == 'pending'
+                          ? Colors.orange
+                          : Colors.blue,
+                    ),
                   ),
                 ),
               ],
@@ -157,7 +209,10 @@ class _FuelOrdersReportPageState extends State<FuelOrdersReportPage> {
             child: Column(
               children: [
                 _rowInfo("Date", order['date']),
-                _rowInfo("Confirmed By", order['admin']), // <--- SHOWING ADMIN IN UI
+                _rowInfo(
+                  "Confirmed By",
+                  order['admin'],
+                ), // <--- SHOWING ADMIN IN UI
                 _rowInfo("Bowser", order['bowser']),
                 _rowInfo("Receipt", order['receipt']),
                 _rowInfo("Volume", "${order['qty']} L", isBold: true),
@@ -175,8 +230,18 @@ class _FuelOrdersReportPageState extends State<FuelOrdersReportPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textDim, fontSize: 11)),
-          Text(val, style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
+          Text(
+            label,
+            style: const TextStyle(color: AppColors.textDim, fontSize: 11),
+          ),
+          Text(
+            val,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
         ],
       ),
     );
@@ -188,19 +253,43 @@ class _FuelOrdersReportPageState extends State<FuelOrdersReportPage> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, -5))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("TOTAL REPLENISHMENT", style: TextStyle(color: AppColors.textDim, fontSize: 10, fontWeight: FontWeight.bold)),
-              Text("${data['totalVolume']} Liters", style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w900, fontSize: 20)),
+              const Text(
+                "TOTAL REPLENISHMENT",
+                style: TextStyle(
+                  color: AppColors.textDim,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                "${data['totalVolume']} Liters",
+                style: const TextStyle(
+                  color: AppColors.primaryGreen,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 15),
-          FuelButton(text: "DOWNLOAD REPORT", isLoading: _isExporting, onPressed: () => _generatePDF(data)),
+          FuelButton(
+            text: "DOWNLOAD REPORT",
+            isLoading: _isExporting,
+            onPressed: () => _generatePDF(data),
+          ),
         ],
       ),
     );
@@ -221,62 +310,117 @@ class _FuelOrdersReportPageState extends State<FuelOrdersReportPage> {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Text("PETROFY - FUEL ORDER REPORT", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold, color: PdfColors.green900)),
-                pw.Text("Official Log: Supply & Replenishment Records", style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700)),
+                pw.Text(
+                  "PETROFY - FUEL ORDER REPORT",
+                  style: pw.TextStyle(
+                    fontSize: 20,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.green900,
+                  ),
+                ),
+                pw.Text(
+                  "This is a computer-generated document. No signature is required.",
+                  style: const pw.TextStyle(
+                    fontSize: 12,
+                    color: PdfColors.grey700,
+                  ),
+                ),
                 pw.SizedBox(height: 5),
               ],
             ),
           ),
-          pw.Text("Time Period: ${DateFormat('dd MMM yyyy').format(_selectedRange.start)} - ${DateFormat('dd MMM yyyy').format(_selectedRange.end)}"),
+          pw.Text(
+            "Time Period: ${DateFormat('dd MMM yyyy').format(_selectedRange.start)} - ${DateFormat('dd MMM yyyy').format(_selectedRange.end)}",
+          ),
           pw.SizedBox(height: 10),
           pw.TableHelper.fromTextArray(
-            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+            headerStyle: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.white,
+            ),
             headerDecoration: const pw.BoxDecoration(color: PdfColors.green900),
             cellStyle: const pw.TextStyle(fontSize: 8),
             data: <List<String>>[
-              ['Date', 'Fuel Type', 'Bowser No', 'Admin', 'Qty (L)', 'Status'], // <--- ADDED ADMIN TO PDF TABLE
-              ...orders.map((o) => [
-                o['date'],
-                o['fuelType'],
-                o['bowser'],
-                o['admin'], // <--- VALUE FROM FIRESTORE
-                o['qty'].toString(),
-                o['status'],
-              ]),
+              [
+                'Date',
+                'Fuel Type',
+                'Bowser No',
+                'Admin',
+                'Qty (L)',
+                'Status',
+              ], // <--- ADDED ADMIN TO PDF TABLE
+              ...orders.map(
+                (o) => [
+                  o['date'],
+                  o['fuelType'],
+                  o['bowser'],
+                  o['admin'], // <--- VALUE FROM FIRESTORE
+                  o['qty'].toString(),
+                  o['status'],
+                ],
+              ),
             ],
           ),
           pw.SizedBox(height: 10),
           pw.Align(
             alignment: pw.Alignment.centerRight,
-            child: pw.Text("TOTAL VOLUME RECEIVED: ${data['totalVolume']} L", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.green900)),
+            child: pw.Text(
+              "TOTAL VOLUME RECEIVED: ${data['totalVolume']} L",
+              style: pw.TextStyle(
+                fontSize: 14,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.green900,
+              ),
+            ),
           ),
         ],
       ),
     );
 
-    await Printing.layoutPdf(name: 'Fuel_Procurement_Report', onLayout: (format) async => pdf.save());
+    await Printing.layoutPdf(
+      name: 'Fuel_Procurement_Report',
+      onLayout: (format) async => pdf.save(),
+    );
     setState(() => _isExporting = false);
   }
 
   Widget _buildDateCard() {
     return InkWell(
       onTap: () async {
-        final picked = await showDateRangePicker(context: context, firstDate: DateTime(2024), lastDate: DateTime.now());
+        final picked = await showDateRangePicker(
+          context: context,
+          firstDate: DateTime(2024),
+          lastDate: DateTime.now(),
+        );
         if (picked != null) setState(() => _selectedRange = picked);
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.white10)),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: Colors.white10),
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("SUPPLY PERIOD", style: TextStyle(color: AppColors.primaryGreen, fontSize: 10, fontWeight: FontWeight.bold)),
+                const Text(
+                  "SUPPLY PERIOD",
+                  style: TextStyle(
+                    color: AppColors.primaryGreen,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 5),
-                Text("${DateFormat('dd MMM yyyy').format(_selectedRange.start)} - ${DateFormat('dd MMM yyyy').format(_selectedRange.end)}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  "${DateFormat('dd MMM yyyy').format(_selectedRange.start)} - ${DateFormat('dd MMM yyyy').format(_selectedRange.end)}",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ],
             ),
             const Icon(Icons.calendar_month, color: AppColors.primaryGreen),
@@ -286,5 +430,16 @@ class _FuelOrdersReportPageState extends State<FuelOrdersReportPage> {
     );
   }
 
-  Widget _buildGlow() => Positioned(top: -50, right: -50, child: Container(width: 250, height: 250, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primaryGreen.withOpacity(0.05))));
+  Widget _buildGlow() => Positioned(
+    top: -50,
+    right: -50,
+    child: Container(
+      width: 250,
+      height: 250,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.primaryGreen.withOpacity(0.05),
+      ),
+    ),
+  );
 }

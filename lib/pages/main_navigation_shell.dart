@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:petrofy/models/user_model.dart'; // Ensure this import exists
+import 'package:petrofy/models/user_model.dart';
 import 'package:petrofy/pages/admin/admin_profile_page.dart';
 import 'package:petrofy/pages/admin/fuel_dashboard.dart';
 import 'package:petrofy/pages/reports/reporting_hub_page.dart';
@@ -90,6 +90,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         return [
           LubricantStorePage(),
           const FuelLevelDashboard(),
+          const FuelLevelDashboard(),
           CustomerProfilePage(user: _currentUser!),
         ];
     }
@@ -115,6 +116,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       return const [
         GButton(icon: Icons.store, text: 'Store'),
         GButton(icon: Icons.local_gas_station_outlined, text: 'Fuel'),
+        GButton(icon: Icons.newspaper, text: 'News'),
         GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     }
