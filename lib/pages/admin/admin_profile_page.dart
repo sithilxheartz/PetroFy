@@ -5,14 +5,11 @@ import 'package:petrofy/home_page.dart';
 import 'package:petrofy/pages/admin/add_order_page.dart';
 import 'package:petrofy/pages/admin/admin_lubricant_list_page.dart';
 import 'package:petrofy/pages/admin/send_notification_page.dart';
-import 'package:petrofy/pages/reports/fuel_orders_report_page.dart';
-import 'package:petrofy/pages/reports/fuel_sales_reports_page.dart';
 import 'package:petrofy/pages/admin/lubricant_grn_page.dart';
 import 'package:petrofy/pages/admin/manage_orders_page.dart';
 import 'package:petrofy/pages/admin/payment_approval_page.dart';
 import 'package:petrofy/pages/admin/price_config_page.dart';
 import 'package:petrofy/pages/admin/user_control_page.dart';
-import 'package:petrofy/pages/reports/shift_report_page.dart';
 import 'package:petrofy/services/cloudinary_service.dart';
 import 'package:petrofy/widgets/custom_components.dart';
 import '../../models/user_model.dart';
@@ -34,28 +31,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   void initState() {
     super.initState();
     _displayImage = widget.user.profilePic;
-  }
-
-  // Generic navigator for your dummy buttons
-  void _navigateToPage(String title) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: AppBar(
-            title: Text(title),
-            backgroundColor: AppColors.surface,
-          ),
-          body: Center(
-            child: Text(
-              "$title Module Coming Soon",
-              style: const TextStyle(color: Colors.white60, fontSize: 21),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -308,33 +283,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     );
   }
 
-  Widget _buildLiveStationStats() {
-    return StreamBuilder<DocumentSnapshot>(
-      // Pulling the daily summary you requested earlier
-      stream: FirebaseFirestore.instance
-          .collection('fuelSaleHistory')
-          .doc(DateTime.now().toString().substring(0, 10))
-          .snapshots(),
-      builder: (context, snapshot) {
-        return Row(
-          children: [
-            _buildStatTile(
-              "STATION REVENUE",
-              "LKR XXX,XXX",
-              Icons.payments_rounded,
-            ),
-            const SizedBox(width: 15),
-            _buildStatTile(
-              "TANK STATUS",
-              "XX% Healthy",
-              Icons.ev_station_rounded,
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _buildSectionLabel(String label) {
     return Align(
       alignment: Alignment.centerLeft,
@@ -345,39 +293,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
           fontSize: 10,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatTile(String label, String val, IconData icon) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: AppColors.primaryGreen, size: 24),
-            const SizedBox(height: 12),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.textDim,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              val,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-          ],
         ),
       ),
     );
