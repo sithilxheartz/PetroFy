@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../models/lubricant_model.dart';
@@ -27,38 +28,54 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
   final TextEditingController _reviewController = TextEditingController();
   double _userRating = 5.0;
 
-  // --- SUBMIT REVIEW WITH DYNAMIC USER NAME ---
+  // --- UPDATED SUBMIT REVIEW ---
   void _submitReview() async {
     if (_reviewController.text.isEmpty) return;
 
     final User? firebaseUser = FirebaseAuth.instance.currentUser;
     if (firebaseUser != null) {
-      // Logic: DisplayName > Email Name > "Customer"
-      String displayName = "Customer";
-      if (firebaseUser.displayName != null && firebaseUser.displayName!.isNotEmpty) {
-        displayName = firebaseUser.displayName!;
-      } else if (firebaseUser.email != null) {
-        displayName = firebaseUser.email!.split('@')[0];
-      }
+      try {
+        // Fetch User details from Firestore
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(firebaseUser.uid)
+            .get();
 
-      final review = ReviewModel(
-        userId: firebaseUser.uid,
-        userName: displayName,
-        comment: _reviewController.text.trim(),
-        rating: _userRating,
-        timestamp: DateTime.now(),
-      );
+        String finalName = "Customer";
 
-      await _reviewService.addReview(widget.product.id!, review);
+        if (userDoc.exists) {
+          final data = userDoc.data() as Map<String, dynamic>;
+          String fName = data['firstName'] ?? "";
+          String lName = data['lastName'] ?? "";
+          finalName = "$fName $lName".trim();
+        }
 
-      _reviewController.clear();
-      if (mounted) {
-        setState(() => _userRating = 5.0);
-        showCustomSnackBar(
-          context, 
-          "Review posted as $displayName!", 
-          isError: false
+        // If Firestore name is empty, fallback to email prefix
+        if (finalName.isEmpty) {
+          finalName = firebaseUser.email?.split('@')[0] ?? "Customer";
+        }
+
+        final newReview = ReviewModel(
+          id: '',
+          fullName: finalName,
+          comment: _reviewController.text.trim(),
+          rating: _userRating,
+          timestamp: DateTime.now(),
         );
+
+        await _reviewService.addReview(widget.product.id!, newReview);
+
+        _reviewController.clear();
+        if (mounted) {
+          setState(() => _userRating = 5.0);
+          showCustomSnackBar(
+            context,
+            "Review posted as $finalName!",
+            isError: false,
+          );
+        }
+      } catch (e) {
+        showCustomSnackBar(context, "Error: $e", isError: true);
       }
     }
   }
@@ -78,7 +95,10 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
             _buildImageHeader(),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 25,
+                  vertical: 20,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -88,28 +108,43 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                     const SizedBox(height: 15),
                     const Text(
                       "PRODUCT SPECIFICATIONS",
-                      style: TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.bold, fontSize: 10, letterSpacing: 1.5),
+                      style: TextStyle(
+                        color: AppColors.primaryGreen,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                        letterSpacing: 1.5,
+                      ),
                     ),
                     const SizedBox(height: 5),
                     Text(
                       widget.product.description,
-                      style: const TextStyle(color: Colors.white70, height: 1.6, fontSize: 14),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        height: 1.6,
+                        fontSize: 14,
+                      ),
                     ),
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 10),
                       child: Divider(color: Colors.white10),
                     ),
-                    
+
                     // --- MODERN REVIEW FORM ---
                     _buildInteractiveReviewForm(),
-                    
+
                     const SizedBox(height: 20),
                     const Text(
                       "CUSTOMER FEEDBACK",
-                      style: TextStyle(color: Colors.white38, fontWeight: FontWeight.bold, fontSize: 10, letterSpacing: 1.5),
+                      style: TextStyle(
+                        color: Colors.white38,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                        letterSpacing: 1.5,
+                      ),
                     ),
                     const SizedBox(height: 15),
                     _buildReviewList(),
+                                 const SizedBox(height: 100),
                   ],
                 ),
               ),
@@ -159,19 +194,38 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
           children: [
             Text(
               widget.product.brand.toUpperCase(),
-              style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 2),
+              style: const TextStyle(
+                color: AppColors.primaryGreen,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                letterSpacing: 2,
+              ),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-              decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(10)),
-              child: Text(widget.product.size, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                widget.product.size,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 5),
         Text(
           widget.product.name,
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
       ],
     );
@@ -181,9 +235,17 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
   Widget _buildInventoryPriceCards() {
     return Row(
       children: [
-        _infoTile("Current Stock", "${widget.product.stockQuantity} Units", Icons.inventory_2_outlined),
+        _infoTile(
+          "Current Stock",
+          "${widget.product.stockQuantity} Units",
+          Icons.inventory_2_outlined,
+        ),
         const SizedBox(width: 15),
-        _infoTile("Selling Price", "Rs.${widget.product.sellingPrice.toInt()}", Icons.payments_outlined),
+        _infoTile(
+          "Selling Price",
+          "Rs.${widget.product.sellingPrice.toInt()}",
+          Icons.payments_outlined,
+        ),
       ],
     );
   }
@@ -202,8 +264,18 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
           children: [
             Icon(icon, color: AppColors.primaryGreen, size: 18),
             const SizedBox(height: 5),
-            Text(label, style: const TextStyle(color: AppColors.textDim, fontSize: 11)),
-            Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+            Text(
+              label,
+              style: const TextStyle(color: AppColors.textDim, fontSize: 11),
+            ),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
           ],
         ),
       ),
@@ -222,20 +294,28 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Post a Review", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+          const Text(
+            "Post a Review",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          ),
           const SizedBox(height: 10),
           Row(
-            children: List.generate(5, (index) => GestureDetector(
-              onTap: () => setState(() => _userRating = index + 1.0),
-              child: Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: Icon(
-                  index < _userRating ? Icons.star_rounded : Icons.star_outline_rounded,
-                  color: AppColors.primaryGreen,
-                  size: 28,
+            children: List.generate(
+              5,
+              (index) => GestureDetector(
+                onTap: () => setState(() => _userRating = index + 1.0),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Icon(
+                    index < _userRating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    color: AppColors.primaryGreen,
+                    size: 28,
+                  ),
                 ),
               ),
-            )),
+            ),
           ),
           const SizedBox(height: 10),
           TextField(
@@ -247,9 +327,15 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
               hintStyle: const TextStyle(color: Colors.white24),
               filled: true,
               fillColor: Colors.black.withOpacity(0.2),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: BorderSide.none,
+              ),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.send_rounded, color: AppColors.primaryGreen),
+                icon: const Icon(
+                  Icons.send_rounded,
+                  color: AppColors.primaryGreen,
+                ),
                 onPressed: _submitReview,
               ),
             ),
@@ -264,9 +350,14 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
     return StreamBuilder<List<ReviewModel>>(
       stream: _reviewService.getReviews(widget.product.id!),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const LinearProgressIndicator(color: AppColors.primaryGreen);
+        if (!snapshot.hasData)
+          return const LinearProgressIndicator(color: AppColors.primaryGreen);
         final reviews = snapshot.data!;
-        if (reviews.isEmpty) return const Text("No reviews found. Be the first to rate!", style: TextStyle(color: AppColors.textDim, fontSize: 12));
+        if (reviews.isEmpty)
+          return const Text(
+            "No reviews found. Be the first to rate!",
+            style: TextStyle(color: AppColors.textDim, fontSize: 12),
+          );
 
         return ListView.builder(
           shrinkWrap: true,
@@ -283,8 +374,13 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                     backgroundColor: AppColors.surface,
                     radius: 18,
                     child: Text(
-                      rev.userName.isNotEmpty ? rev.userName[0].toUpperCase() : "U",
-                      style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.bold),
+                      rev.fullName.isNotEmpty
+                          ? rev.fullName[0].toUpperCase()
+                          : "U",
+                      style: const TextStyle(
+                        color: AppColors.primaryGreen,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 15),
@@ -295,12 +391,37 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(rev.userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white)),
-                            Row(children: List.generate(5, (i) => Icon(Icons.star, size: 10, color: i < rev.rating ? AppColors.primaryGreen : Colors.white10))),
+                            Text(
+                              rev.fullName, // Changed from rev.userName
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Row(
+                              children: List.generate(
+                                5,
+                                (i) => Icon(
+                                  Icons.star,
+                                  size: 10,
+                                  color: i < rev.rating
+                                      ? AppColors.primaryGreen
+                                      : Colors.white10,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 5),
-                        Text(rev.comment, style: const TextStyle(color: AppColors.textDim, fontSize: 13, height: 1.4)),
+                        Text(
+                          rev.comment,
+                          style: const TextStyle(
+                            color: AppColors.textDim,
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -325,8 +446,9 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
             color: Colors.black.withOpacity(0.2),
             blurRadius: 10,
             offset: const Offset(0, -5),
-          )
-        ],),
+          ),
+        ],
+      ),
       child: FuelButton(
         text: "ADD TO CART + Rs.${widget.product.sellingPrice.toInt()}",
         onPressed: () {
@@ -334,9 +456,9 @@ class _ProductDetailsSheetState extends State<ProductDetailsSheet> {
           // Pop first so SnackBar shows on the Store Page
           Navigator.pop(context);
           showCustomSnackBar(
-            context, 
-            "${widget.product.name} added to cart!", 
-            isError: false
+            context,
+            "${widget.product.name} added to cart!",
+            isError: false,
           );
         },
       ),

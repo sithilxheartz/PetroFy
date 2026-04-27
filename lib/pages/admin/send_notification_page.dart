@@ -130,24 +130,21 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
                 children: [
                   // ── Compose Card ──
                   _buildSectionLabel("COMPOSE MESSAGE"),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 15),
                   _buildComposeCard(),
 
-                  const SizedBox(height: 20),
+                     const SizedBox(height: 15),
 
                   // ── Target Audience ──
                   _buildSectionLabel("SELECT AUDIENCE"),
-                  const SizedBox(height: 10),
+                               const SizedBox(height: 15),
                   _buildAudiencePicker(),
+              const SizedBox(height: 15),
 
-                  const SizedBox(height: 20),
-
-                  // ── Preview Card ──
-                  _buildSectionLabel("NOTIFICATION PREVIEW"),
-                  const SizedBox(height: 10),
+         
                   _buildPreviewCard(),
 
-                  const SizedBox(height: 20),
+                        const SizedBox(height: 15),
 
                   // ── Send Button ──
                   FuelButton(
@@ -156,14 +153,13 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
                     onPressed: _handleSend,
                   ),
 
-                  const SizedBox(height: 30),
+                             const SizedBox(height: 15),
 
                   // ── Recent Notifications ──
                   _buildSectionLabel("RECENT BROADCASTS"),
-                  const SizedBox(height: 10),
+                     const SizedBox(height: 15),
                   _buildRecentList(),
 
-                  const SizedBox(height: 30),
                 ],
               ),
             ),
@@ -306,7 +302,7 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
         : _bodyController.text;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.surface.withOpacity(0.3),
         borderRadius: BorderRadius.circular(16),
@@ -315,7 +311,7 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
         ),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // App icon placeholder
           Container(
@@ -507,15 +503,17 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
     );
   }
 
-  Widget _buildSectionLabel(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        color: AppColors.primaryGreen,
-        fontSize: 10,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 1,
-        fontFamily: GoogleFonts.poppins().fontFamily,
+  Widget _buildSectionLabel(String label) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.primaryGreen,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.5,
+        ),
       ),
     );
   }

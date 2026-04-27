@@ -121,21 +121,6 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
               child: Column(
                 children: [
                   _buildAvatarSection(),
-                  const SizedBox(height: 15),
-                  Text(
-                    "${widget.user.firstName} ${widget.user.lastName}",
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    widget.user.email,
-                    style: const TextStyle(
-                      color: AppColors.textDim,
-                      fontSize: 12,
-                    ),
-                  ),
                   const SizedBox(height: 20),
 
                   // TODAY'S QUICK STATS
@@ -205,27 +190,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
                       ShiftHistoryPopup(pumperId: widget.user.uid),
                     ),
                   ),
-                  const SizedBox(height: 5),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "ACCOUNT SETTINGS",
-                      style: TextStyle(
-                        color: AppColors.primaryGreen,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  _buildMenuButton(
-                    "Update Profile Image",
-                    "Update administrative profile and security photo",
-                    Icons.face_retouching_natural_rounded,
-                    _handleImageUpload, // Connected to image upload logic
-                  ),
-                  const SizedBox(height: 10),
+               
                 ],
               ),
             ),
@@ -239,13 +204,13 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
-        ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
+      ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(icon, color: AppColors.primaryGreen, size: 23),
             const SizedBox(height: 5),
@@ -280,11 +245,14 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.surface.withOpacity(0.6),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(
+              color: AppColors.primaryGreen.withOpacity(0.1),
+              width: 1.5,
+            ),
           ),
           child: Row(
             children: [
@@ -331,23 +299,65 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
   }
 
   Widget _buildAvatarSection() {
-    return Stack(
-      alignment: Alignment.center,
+    return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.primaryGreen, width: 2),
-          ),
-          child: CircleAvatar(
-            radius: 55,
-            backgroundImage: NetworkImage(_displayImage),
-            backgroundColor: AppColors.surface,
-          ),
+        Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.primaryGreen.withOpacity(0.2),
+                  width: 2,
+                ),
+              ),
+              child: CircleAvatar(
+                radius: 55,
+                backgroundImage: NetworkImage(_displayImage),
+                backgroundColor: AppColors.surface,
+                child: _isUploading
+                    ? const CircularProgressIndicator(
+                        color: AppColors.primaryGreen,
+                      )
+                    : null,
+              ),
+            ),
+            // The Plus Icon Overlay
+            if (!_isUploading)
+              Positioned(
+                bottom: 5,
+                right: 5,
+                child: GestureDetector(
+                  onTap: _handleImageUpload,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryGreen,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: Colors.black45, blurRadius: 5),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.add_a_photo_rounded,
+                      size: 18,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
-        if (_isUploading)
-          const CircularProgressIndicator(color: AppColors.primaryGreen),
+        const SizedBox(height: 15),
+        Text(
+          "${widget.user.firstName} ${widget.user.lastName}",
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          widget.user.email,
+          style: const TextStyle(color: AppColors.textDim, fontSize: 12),
+        ),
       ],
     );
   }

@@ -83,50 +83,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   _buildAdminHeader(),
                   const SizedBox(height: 20),
 
-                  _buildSectionLabel("REPORTS & INSIGHTS"),
-                  const SizedBox(height: 15),
-                  _buildMenuButton(
-                    "Fuel Sales Report",
-                    "Configure real-time LKR pricing for fuel types",
-                      Icons.bar_chart_rounded,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const FuelReportsPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuButton(
-                    "Fuel Orders Report",
-                    "Configure real-time LKR pricing for fuel types",
-                      Icons.bar_chart_rounded,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const FuelOrdersReportPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuButton(
-                    "Shift Roster Report",
-                    "Configure real-time LKR pricing for fuel types",
-                      Icons.bar_chart_rounded,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ShiftReportPage(),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 5),
-                  _buildSectionLabel("STATION OPERATIONS"),
+                  _buildSectionLabel("FUEL STATION OPERATIONS"),
                   const SizedBox(height: 15),
 
                   _buildMenuButton(
@@ -175,7 +132,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   const SizedBox(height: 5),
 
                   // --- INVENTORY & LOGISTICS ---
-                  _buildSectionLabel("INVENTORY & LOGISTICS"),
+                  _buildSectionLabel("ONLINE STORE OPERATIONS"),
                   const SizedBox(height: 15),
 
                   _buildMenuButton(
@@ -224,7 +181,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   const SizedBox(height: 5),
 
                   // --- ADMINISTRATION ---
-                  _buildSectionLabel("SYSTEM ADMINISTRATION"),
+                  _buildSectionLabel("SYSTEM OPERATIONS"),
                   const SizedBox(height: 15),
 
                   _buildMenuButton(
@@ -253,15 +210,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                       );
                     },
                   ),
-
-                  _buildMenuButton(
-                    "Update Profile Image",
-                    "Update administrative profile photo",
-                    Icons.face_retouching_natural_rounded,
-                    _handleImageUpload,
-                  ),
-
-                  const SizedBox(height: 10),
                 ],
               ),
             ),
@@ -299,7 +247,54 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   Widget _buildAdminHeader() {
     return Column(
       children: [
-        _buildAvatarSection(),
+        Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.primaryGreen.withOpacity(0.2),
+                  width: 2,
+                ),
+              ),
+              child: CircleAvatar(
+                radius: 55,
+                backgroundImage: NetworkImage(_displayImage),
+                backgroundColor: AppColors.surface,
+                child: _isUploading
+                    ? const CircularProgressIndicator(
+                        color: AppColors.primaryGreen,
+                      )
+                    : null,
+              ),
+            ),
+            // The Plus Icon Overlay
+            if (!_isUploading)
+              Positioned(
+                bottom: 5,
+                right: 5,
+                child: GestureDetector(
+                  onTap: _handleImageUpload,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryGreen,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: Colors.black45, blurRadius: 5),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.add_a_photo_rounded,
+                      size: 18,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
         const SizedBox(height: 15),
         Text(
           "${widget.user.firstName} ${widget.user.lastName}",

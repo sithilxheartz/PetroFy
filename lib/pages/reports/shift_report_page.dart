@@ -265,8 +265,8 @@ class _ShiftReportPageState extends State<ShiftReportPage> {
         if (picked != null) setState(() => _selectedRange = picked);
       },
       child: Container(
-        margin: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
-        padding: const EdgeInsets.all(15),
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(15),
@@ -286,18 +286,14 @@ class _ShiftReportPageState extends State<ShiftReportPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 5),
+                SizedBox(height: 5),
                 Text(
                   "${DateFormat('dd MMM yyyy').format(_selectedRange.start)} - ${DateFormat('dd MMM yyyy').format(_selectedRange.end)}",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            const Icon(
-              Icons.calendar_today,
-              color: AppColors.primaryGreen,
-              size: 20,
-            ),
+            const Icon(Icons.calendar_month, color: AppColors.primaryGreen),
           ],
         ),
       ),

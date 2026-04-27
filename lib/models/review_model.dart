@@ -1,17 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ReviewModel {
-  final String? id;
-  final String userId;
-  final String userName;
+  final String id;
+  final String fullName; // Consistent naming
   final String comment;
   final double rating;
   final DateTime timestamp;
 
   ReviewModel({
-    this.id,
-    required this.userId,
-    required this.userName,
+    required this.id,
+    required this.fullName,
     required this.comment,
     required this.rating,
     required this.timestamp,
@@ -19,22 +17,20 @@ class ReviewModel {
 
   Map<String, dynamic> toMap() {
     return {
-      'userId': userId,
-      'userName': userName,
+      'fullName': fullName,
       'comment': comment,
       'rating': rating,
-      'timestamp': timestamp,
+      'timestamp': FieldValue.serverTimestamp(),
     };
   }
 
-  factory ReviewModel.fromMap(Map<String, dynamic> map, String id) {
+  factory ReviewModel.fromMap(Map<String, dynamic> map, String docId) {
     return ReviewModel(
-      id: id,
-      userId: map['userId'] ?? '',
-      userName: map['userName'] ?? 'Anonymous',
+      id: docId,
+      fullName: map['fullName'] ?? 'Anonymous User',
       comment: map['comment'] ?? '',
-      rating: (map['rating'] as num).toDouble(),
-      timestamp: (map['timestamp'] as Timestamp).toDate(),
+      rating: (map['rating'] ?? 0.0).toDouble(),
+      timestamp: (map['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 }

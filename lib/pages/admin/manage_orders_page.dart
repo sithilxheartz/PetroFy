@@ -200,7 +200,7 @@ class _ManageOrdersPageState extends State<ManageOrdersPage> {
                             onTap: () => _showOrderDetails(context, order, doc.id),
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 15),
-                              padding: const EdgeInsets.all(20),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                               decoration: BoxDecoration(
                                 color: AppColors.surface,
                                 borderRadius: BorderRadius.circular(20),

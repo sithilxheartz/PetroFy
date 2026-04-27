@@ -7,7 +7,7 @@ import 'package:petrofy/models/user_model.dart';
 import 'package:petrofy/pages/admin/admin_profile_page.dart';
 import 'package:petrofy/pages/admin/fuel_dashboard.dart';
 import 'package:petrofy/pages/reports/reporting_hub_page.dart';
-import 'package:petrofy/pages/dashboard_screen.dart';
+import 'package:petrofy/pages/ai_dashboard_screen.dart';
 import 'package:petrofy/pages/pumper/add_sale_page.dart';
 import 'package:petrofy/pages/pumper/profile_page.dart';
 import 'package:petrofy/pages/pumper/shift_view_page.dart';
@@ -76,7 +76,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         return [
           const FuelLevelDashboard(),
           DashboardScreen(),
-          ReportingHubPage(adminUser: _currentUser!),
+        ReportingHubPage(),
           AdminProfilePage(user: _currentUser!), // Pass actual user
         ];
       case 'pumper':
@@ -89,7 +89,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       default:
         return [
           LubricantStorePage(),
-          const FuelLevelDashboard(),
           const FuelLevelDashboard(),
           CustomerProfilePage(user: _currentUser!),
         ];
@@ -116,7 +115,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       return const [
         GButton(icon: Icons.store, text: 'Store'),
         GButton(icon: Icons.local_gas_station_outlined, text: 'Fuel'),
-        GButton(icon: Icons.newspaper, text: 'News'),
         GButton(icon: Icons.person_outline, text: 'Profile'),
       ];
     }

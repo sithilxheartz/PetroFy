@@ -36,16 +36,19 @@ class MyOrdersPage extends StatelessWidget {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text(
-                        "PETROFY STORE",
+                        "PETROFY STORE - RECEIPT",
                         style: pw.TextStyle(
-                          fontSize: 24,
+                          fontSize: 20,
                           fontWeight: pw.FontWeight.bold,
                           color: PdfColors.green900,
                         ),
                       ),
                       pw.Text(
                         "This is a computer-generated document. No signature is required.",
-                        style: const pw.TextStyle(fontSize: 10),
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                          color: PdfColors.grey700,
+                        ),
                       ),
                     ],
                   ),
@@ -65,8 +68,8 @@ class MyOrdersPage extends StatelessWidget {
                   ),
                 ],
               ),
-              pw.SizedBox(height: 20),
-              pw.Divider(thickness: 0.5),
+
+              pw.Divider(thickness: 0.2),
               pw.SizedBox(height: 5),
 
               // SHIPPING INFO
@@ -77,13 +80,13 @@ class MyOrdersPage extends StatelessWidget {
                   fontSize: 12,
                 ),
               ),
-              pw.SizedBox(height: 8),
+              //   pw.SizedBox(height: 8),
               pw.Text("Customer: ${order['customerName']}"),
               pw.SizedBox(height: 1),
               pw.Text("Phone: ${order['phoneNumber']}"),
               pw.SizedBox(height: 1),
               pw.Text("Address: ${order['address']}"),
-              pw.SizedBox(height: 20),
+              pw.SizedBox(height: 15),
 
               // PRODUCT TABLE
               pw.TableHelper.fromTextArray(
@@ -114,7 +117,7 @@ class MyOrdersPage extends StatelessWidget {
                 ],
               ),
 
-              pw.SizedBox(height: 20),
+              pw.SizedBox(height: 10),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.end,
                 children: [
@@ -128,14 +131,14 @@ class MyOrdersPage extends StatelessWidget {
                   ),
                 ],
               ),
-              pw.Spacer(),
-              pw.Divider(thickness: 0.5),
+              //   pw.Spacer(),
+              pw.Divider(thickness: 0.1),
               pw.Center(
                 child: pw.Column(
                   children: [
-                    pw.SizedBox(height: 2),
+                    pw.SizedBox(height: 1),
                     pw.Text(
-                      "Thank you for choosing Petrofy Store!",
+                      "Thank you for choosing Petrofy Store! We look forward to serving you again.",
                       style: const pw.TextStyle(fontSize: 9),
                     ),
                     //   pw.Spacer(),
@@ -230,7 +233,10 @@ class MyOrdersPage extends StatelessWidget {
                       }
 
                       return ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 15,
+                          horizontal: 20,
+                        ),
                         itemCount: orders.length,
                         itemBuilder: (context, index) {
                           var order =
@@ -257,7 +263,10 @@ class MyOrdersPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface.withOpacity(0.5),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
+        border: Border.all(
+          color: AppColors.primaryGreen.withOpacity(0.1),
+          width: 1.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
