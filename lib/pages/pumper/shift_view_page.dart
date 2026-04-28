@@ -7,6 +7,7 @@ import '../../models/user_model.dart';
 import '../../services/shift_service.dart';
 import '../../utils/app_colors.dart';
 import 'book_shift_page.dart';
+import 'swap_requests_page.dart';
 
 class ShiftViewPage extends StatefulWidget {
   final UserModel user;
@@ -40,39 +41,19 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      extendBodyBehindAppBar: true, 
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
           "SHIFT ROSTER",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21, letterSpacing: 0),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 21,
+            letterSpacing: 0,
+          ),
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
-
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 15, top: 8, bottom: 8),
-            child: Container(
-              width: 155,
-              height: 35,
-              child: TextButton.icon(
-                onPressed: _showBookingSheet,
-                icon: const Icon(Icons.add, color: Colors.white, size: 18),
-                label: const Text(
-                  "BOOK SHIFT",
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-                style: TextButton.styleFrom(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+      
       ),
       body: Stack(
         children: [
@@ -86,15 +67,34 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
                     stream: _shiftService.getShiftsByDate(_selectedDate),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen));
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primaryGreen,
+                          ),
+                        );
                       }
                       final shifts = snapshot.data ?? [];
                       return ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 5,
+                        ),
                         children: [
-                          _buildShiftSection("DAY SHIFT", Icons.sunny, shifts.where((s) => s.shiftType == "Day Shift").toList()),
+                          _buildShiftSection(
+                            "DAY SHIFT",
+                            Icons.sunny,
+                            shifts
+                                .where((s) => s.shiftType == "Day Shift")
+                                .toList(),
+                          ),
                           const SizedBox(height: 15),
-                          _buildShiftSection("NIGHT SHIFT", Icons.nights_stay_outlined, shifts.where((s) => s.shiftType == "Night Shift").toList()),
+                          _buildShiftSection(
+                            "NIGHT SHIFT",
+                            Icons.nights_stay_outlined,
+                            shifts
+                                .where((s) => s.shiftType == "Night Shift")
+                                .toList(),
+                          ),
                           const SizedBox(height: 100),
                         ],
                       );
@@ -127,14 +127,26 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
+            border: Border.all(
+              color: AppColors.primaryGreen.withOpacity(0.1),
+              width: 1.5,
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(DateFormat('dd MMMM yyyy').format(_selectedDate),
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color.fromARGB(255, 255, 255, 255))),
-              const Icon(Icons.calendar_today, size: 18, color: AppColors.primaryGreen),
+              Text(
+                DateFormat('dd MMMM yyyy').format(_selectedDate),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 255, 255, 255),
+                ),
+              ),
+              const Icon(
+                Icons.calendar_month,
+                size: 18,
+                color: AppColors.primaryGreen,
+              ),
             ],
           ),
         ),
@@ -142,7 +154,11 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
     );
   }
 
-  Widget _buildShiftSection(String title, IconData icon, List<ShiftModel> shifts) {
+  Widget _buildShiftSection(
+    String title,
+    IconData icon,
+    List<ShiftModel> shifts,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -150,56 +166,154 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
           children: [
             Icon(icon, size: 14, color: AppColors.primaryGreen),
             const SizedBox(width: 8),
-            Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 255, 255, 255))),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 255, 255, 255),
+              ),
+            ),
+            const Spacer(),
+            // shift count badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: AppColors.primaryGreen.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                "${shifts.length} pumpers",
+                style: const TextStyle(
+                  color: AppColors.primaryGreen,
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 15),
         shifts.isEmpty
-            ? const Text("No deployments found", style: TextStyle(color: Colors.white10, fontSize: 12))
+            ? const Text(
+                "No deployments found",
+                style: TextStyle(color: Colors.white10, fontSize: 12),
+              )
             : Column(children: shifts.map((s) => _buildPumperCard(s)).toList()),
       ],
     );
   }
 
   Widget _buildPumperCard(ShiftModel shift) {
+    // Highlight if this card belongs to the logged-in pumper
+    final isMe = shift.pumperId == widget.user.uid;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.4),
+        color: isMe
+            ? AppColors.primaryGreen.withOpacity(0.08)
+            : AppColors.surface.withOpacity(0.4),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.white.withOpacity(0.03)),
+        border: Border.all(
+          color: isMe
+              ? AppColors.primaryGreen.withOpacity(0.25)
+              : Colors.white.withOpacity(0.03),
+        ),
       ),
       child: Row(
         children: [
+          // Profile picture
           FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance.collection('users').doc(shift.pumperId).get(),
+            future: FirebaseFirestore.instance
+                .collection('users')
+                .doc(shift.pumperId)
+                .get(),
             builder: (context, snapshot) {
-              String imgUrl = "https://ui-avatars.com/api/?name=${shift.pumperName}&background=00E676&color=fff";
+              String imgUrl =
+                  "https://ui-avatars.com/api/?name=${shift.pumperName}&background=00E676&color=fff";
               if (snapshot.hasData && snapshot.data!.exists) {
                 imgUrl = snapshot.data!['profilePic'] ?? imgUrl;
               }
-              return CircleAvatar(radius: 20, backgroundImage: NetworkImage(imgUrl), backgroundColor: AppColors.background);
+              return CircleAvatar(
+                radius: 20,
+                backgroundImage: NetworkImage(imgUrl),
+                backgroundColor: AppColors.background,
+              );
             },
           ),
+
           const SizedBox(width: 15),
+
+          // Name + role
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(shift.pumperName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const Text("VERIFIED FUEL PUMPER", style: TextStyle(fontSize: 8, color: AppColors.primaryGreen, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                Row(
+                  children: [
+                    Text(
+                      shift.pumperName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    if (isMe) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryGreen,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          "YOU",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 7,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const Text(
+                  "VERIFIED FUEL PUMPER",
+                  style: TextStyle(
+                    fontSize: 8,
+                    color: AppColors.primaryGreen,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ],
             ),
           ),
+
+          // Pump badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: AppColors.primaryGreen.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.primaryGreen.withOpacity(0.2)),
+              border: Border.all(
+                color: AppColors.primaryGreen.withOpacity(0.2),
+              ),
             ),
-            child: Text(shift.pumpNumber.toUpperCase(), style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.bold, fontSize: 10)),
+            child: Text(
+              shift.pumpNumber.toUpperCase(),
+              style: const TextStyle(
+                color: AppColors.primaryGreen,
+                fontWeight: FontWeight.bold,
+                fontSize: 10,
+              ),
+            ),
           ),
         ],
       ),
@@ -207,6 +321,13 @@ class _ShiftViewPageState extends State<ShiftViewPage> {
   }
 
   Widget _buildGlow() {
-    return Container(width: 250, height: 250, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primaryGreen.withOpacity(0.05)));
+    return Container(
+      width: 250,
+      height: 250,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.primaryGreen.withOpacity(0.05),
+      ),
+    );
   }
 }

@@ -11,6 +11,7 @@ import 'package:petrofy/pages/admin/manage_orders_page.dart';
 import 'package:petrofy/pages/admin/payment_approval_page.dart';
 import 'package:petrofy/pages/admin/price_config_page.dart';
 import 'package:petrofy/pages/admin/user_control_page.dart';
+import 'package:petrofy/pages/pumper/shift_view_page.dart';
 import 'package:petrofy/services/cloudinary_service.dart';
 import 'package:petrofy/widgets/custom_components.dart';
 import '../../models/user_model.dart';
@@ -64,7 +65,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
                   _buildMenuButton(
                     "Sales Payment Approval",
-                    "Review pumper fuel shift payments",
+                    "Review & approve pumper shift payments",
                     Icons.fact_check_outlined,
                     () {
                       Navigator.push(
@@ -77,8 +78,33 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                     },
                   ),
                   _buildMenuButton(
-                    "Add New Fuel Stock (GRN)",
-                    "Register incoming new fuel orders",
+                    "Generate Shift Schedule",
+                    "Auto-assign pumpers for the upcoming week",
+                    Icons.auto_awesome_outlined,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GenerateSchedulePage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
+                    "Shift Schedule Roster",
+                    "See who's working on any given day",
+                    Icons.calendar_month,
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ShiftViewPage(user: widget.user), // ← fixed
+                      ),
+                    ),
+                  ),
+                  _buildMenuButton(
+                    "Fuel Stock Entry (GRN)",
+                    "Register incoming fuel delivery orders",
                     Icons.add_business_outlined,
                     () {
                       Navigator.push(
@@ -90,29 +116,29 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                       );
                     },
                   ),
-                  _buildMenuButton(
-                    "Generate Shift Schedules",
-                    "Automatically generate pumper work Schedule",
-                    Icons.calendar_today_outlined,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GenerateSchedulePage(),
-                        ),
-                      );
-                    },
-                  ),
+
                   const SizedBox(height: 5),
 
                   // --- INVENTORY & LOGISTICS ---
                   _buildSectionLabel("ONLINE STORE OPERATIONS"),
                   const SizedBox(height: 15),
-
+                  _buildMenuButton(
+                    "Pending Online Orders",
+                    "Process active shipments & track deliveries",
+                    Icons.local_shipping_outlined,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ManageOrdersPage(),
+                        ),
+                      );
+                    },
+                  ),
                   _buildMenuButton(
                     "Catalog Management",
                     "Modify lubricant specifications & pricing",
-                    Icons.inventory_2_outlined,
+                    Icons.list,
                     () {
                       Navigator.push(
                         context,
@@ -124,29 +150,14 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   ),
 
                   _buildMenuButton(
-                    "Add New Product Stocks (GRN)",
-                    "Register incoming inventory stock levels",
+                    "Product Stock Entry (GRN)",
+                    "Register incoming lubricant inventory",
                     Icons.add_business_outlined,
                     () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const LubricantGRNPage(),
-                        ),
-                      );
-                    },
-                  ),
-
-                  _buildMenuButton(
-                    "Pending Online Orders",
-                    "Process active shipments & track deliveries",
-                    Icons
-                        .local_shipping_outlined, // Changed to a more suitable icon
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ManageOrdersPage(),
                         ),
                       );
                     },
@@ -159,8 +170,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   const SizedBox(height: 15),
 
                   _buildMenuButton(
-                    "Send Broadcast Notification",
-                    "Send Special notification for users",
+                    "Broadcast Notification",
+                    "Send announcements to all users",
                     Icons.notification_add,
                     () {
                       Navigator.push(
@@ -173,8 +184,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   ),
                   _buildMenuButton(
                     "User Access Control",
-                    "Manage system permissions for users",
-                    Icons.admin_panel_settings_outlined,
+                    "Manage roles & system permissions",
+                    Icons.groups_outlined,
                     () {
                       Navigator.push(
                         context,
@@ -186,8 +197,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   ),
                   _buildMenuButton(
                     "Fuel Rate Control",
-                    "Configure real-time LKR pricing for fuel types",
-                    Icons.app_registration_rounded,
+                    "Configure real-time LKR pricing per fuel type",
+                    Icons.price_change_outlined,
                     () {
                       Navigator.push(
                         context,

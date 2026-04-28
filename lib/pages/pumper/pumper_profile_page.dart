@@ -3,15 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petrofy/home_page.dart';
-import 'package:petrofy/pages/pumper/my_schedule_page.dart';
 import 'package:petrofy/pages/pumper/preferences_page.dart';
+import 'package:petrofy/pages/pumper/shift_view_page.dart';
 import '../../models/user_model.dart';
 import '../../models/fuel_sale_model.dart';
 import '../../services/cloudinary_service.dart';
 import '../../services/sales_service.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/custom_components.dart';
-import 'profile_popups.dart';
+import 'pumper_profile_popups.dart';
 
 class PumperProfilePage extends StatefulWidget {
   final UserModel user;
@@ -173,34 +173,32 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 15),
-
                   _buildMenuButton(
-                    "Sales History",
-                    "Track your daily dispense logs",
-                    Icons.history,
+                    "Edit Shift Preferences",
+                    "Set preferred shifts for auto-scheduling",
+                    Icons.tune_rounded,
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            PreferencesPage(user: widget.user),
+                      ),
+                    ),
+                  ),
+                  _buildMenuButton(
+                    "My Sales History",
+                    "Review your fuel dispense records",
+                    Icons.receipt_long_outlined,
                     () => _showPopup(
                       "FUEL SALE HISTORY",
                       SalesHistoryPopup(pumperId: widget.user.uid),
                     ),
                   ),
+
                   _buildMenuButton(
-                "MY SCHEDULE",
-                    "Edit shift prefrences for automated sheduling",
-                    Icons.edit_calendar_rounded,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                             MySchedulePage(user: widget.user),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuButton(
-                    "Duty History",
-                    "Review assigned shifts and pumps",
-                    Icons.assignment_turned_in_outlined,
+                    "My Work History",
+                    "Browse your past shift assignments",
+                    Icons.work_history_outlined,
                     () => _showPopup(
                       "DUTY HISTORY",
                       ShiftHistoryPopup(pumperId: widget.user.uid),
@@ -208,18 +206,16 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
                   ),
 
                   _buildMenuButton(
-                    "Edit Shift Preferences",
-                    "Edit shift prefrences for automated sheduling",
-                    Icons.edit_calendar_rounded,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              PreferencesPage(user: widget.user),
-                        ),
-                      );
-                    },
+                    "Shift Schedule Roster",
+                    "View all pumpers scheduled on any date",
+                    Icons.calendar_month,
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ShiftViewPage(user: widget.user), // ← fixed
+                      ),
+                    ),
                   ),
                 ],
               ),

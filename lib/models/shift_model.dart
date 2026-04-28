@@ -8,7 +8,7 @@ class ShiftModel {
   final String shiftType;
   final String pumpNumber;
   final String status;
-  final bool isAutoAssigned; // ← ADD THIS
+  final bool isAutoAssigned; // ← make sure this exists
 
   ShiftModel({
     this.id,
@@ -18,7 +18,7 @@ class ShiftModel {
     required this.shiftType,
     required this.pumpNumber,
     this.status = 'pending',
-    this.isAutoAssigned = false, // ← ADD THIS
+    this.isAutoAssigned = false, // ← defaults to false so old shifts still work
   });
 
   factory ShiftModel.fromMap(Map<String, dynamic> map, String docId) {
@@ -30,7 +30,7 @@ class ShiftModel {
       shiftType: map['shiftType'] ?? '',
       pumpNumber: map['pumpNumber'] ?? '',
       status: map['status'] ?? 'pending',
-      isAutoAssigned: map['isAutoAssigned'] ?? false, // ← ADD THIS
+      isAutoAssigned: map['isAutoAssigned'] ?? false, // ← safe fallback
     );
   }
 
@@ -42,7 +42,7 @@ class ShiftModel {
       'shiftType': shiftType,
       'pumpNumber': pumpNumber,
       'status': status,
-      'isAutoAssigned': isAutoAssigned, // ← ADD THIS
+      'isAutoAssigned': isAutoAssigned,
     };
   }
 }

@@ -415,7 +415,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
         child: Container(
           height: MediaQuery.of(context).size.height * 0.8,
           decoration: const BoxDecoration(
@@ -439,9 +439,10 @@ class _AddOrderPageState extends State<AddOrderPage> {
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2,
                   color: AppColors.primaryGreen,
-                  fontSize: 14,
+             fontSize: 16,
                 ),
               ),
+              SizedBox(height: 10,),
               const Expanded(child: OrderHistoryPopup()), // 👈 Your new widget
             ],
           ),

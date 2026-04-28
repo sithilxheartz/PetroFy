@@ -25,9 +25,7 @@ void main() async {
 
   runApp(
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => CartProvider()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => CartProvider())],
       child: const MyApp(),
     ),
   );
@@ -70,7 +68,8 @@ class _MyAppState extends State<MyApp> {
   void _handleNotificationTap(Map<String, dynamic> data) {
     final screen = data['screen'];
 
-    if (screen == 'my_schedule' || screen == 'generate_schedule' ||
+    if (screen == 'my_schedule' ||
+        screen == 'generate_schedule' ||
         screen == 'shifts') {
       // Small delay to ensure widget tree is ready
       Future.delayed(const Duration(milliseconds: 300), () {
@@ -79,6 +78,13 @@ class _MyAppState extends State<MyApp> {
           // 'shifts' tells MainNavigationShell to open the shifts tab
           _initialTabFromNotification = 'shifts';
         });
+      });
+    }
+
+    if (screen == 'swap_requests') {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (!mounted) return;
+        setState(() => _initialTabFromNotification = 'shifts');
       });
     }
 
@@ -111,12 +117,11 @@ class _MyAppState extends State<MyApp> {
         scaffoldBackgroundColor: AppColors.background,
         primaryColor: AppColors.primaryGreen,
         fontFamily: GoogleFonts.poppins().fontFamily,
-        textTheme: GoogleFonts.poppinsTextTheme(
-          Theme.of(context).textTheme,
-        ).apply(
-          bodyColor: AppColors.textMain,
-          displayColor: AppColors.textMain,
-        ),
+        textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
+            .apply(
+              bodyColor: AppColors.textMain,
+              displayColor: AppColors.textMain,
+            ),
         inputDecorationTheme: const InputDecorationTheme(
           labelStyle: TextStyle(color: AppColors.textDim),
           hintStyle: TextStyle(color: AppColors.textDim),
@@ -144,7 +149,8 @@ class _MyAppState extends State<MyApp> {
                   return const Scaffold(
                     body: Center(
                       child: CircularProgressIndicator(
-                          color: AppColors.primaryGreen),
+                        color: AppColors.primaryGreen,
+                      ),
                     ),
                   );
                 }

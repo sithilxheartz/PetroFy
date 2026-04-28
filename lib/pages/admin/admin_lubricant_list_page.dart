@@ -202,7 +202,8 @@ class _AdminLubricantListPageState extends State<AdminLubricantListPage> {
           Padding(
             padding: const EdgeInsets.only(right: 15, top: 8, bottom: 8),
             child: SizedBox(
-              width: 135,
+              width: 145,
+              height: 35,
               child: TextButton.icon(
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddLubricantPage())),
                 icon: const Icon(Icons.add_business_outlined, color: Colors.white, size: 18),

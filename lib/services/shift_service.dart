@@ -4,11 +4,13 @@ import '../models/shift_model.dart';
 class ShiftService {
   final CollectionReference _shiftCollection = FirebaseFirestore.instance.collection('shiftSchedule');
 
-  Future<String?> requestShift(ShiftModel shift) async {
-    try {
-      // 0. Normalize date to midnight for accurate querying
-      DateTime normalizedDate = DateTime(shift.date.year, shift.date.month, shift.date.day);
-      Timestamp dateTimestamp = Timestamp.fromDate(normalizedDate);
+Future<String?> requestShift(ShiftModel shift) async {
+  try {
+    // ← changed to UTC midnight
+    DateTime normalizedDate = DateTime.utc(
+      shift.date.year, shift.date.month, shift.date.day,
+    );
+    Timestamp dateTimestamp = Timestamp.fromDate(normalizedDate);
 
       // --- CONSTRAINT 1: Is this specific PUMP already taken by SOMEONE ELSE? ---
       final QuerySnapshot pumpTaken = await _shiftCollection
@@ -43,35 +45,39 @@ class ShiftService {
       return "Connection Error: ${e.toString()}";
     }
   }
+// Stream for the Roster View
+Stream<List<ShiftModel>> getShiftsByDate(DateTime date) {
+  // ← changed to UTC to match what Cloud Function wrote
+  DateTime searchDate = DateTime.utc(date.year, date.month, date.day);
 
-  // Stream for the Roster View
-  Stream<List<ShiftModel>> getShiftsByDate(DateTime date) {
-    DateTime searchDate = DateTime(date.year, date.month, date.day);
-    return _shiftCollection
-        .where('date', isEqualTo: Timestamp.fromDate(searchDate))
-        .snapshots()
-        .map((snap) => snap.docs
-            .map((doc) => ShiftModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
-            .toList());
-  }
-// Fetches shifts for a specific pumper within a defined date range
-  Stream<List<ShiftModel>> getShiftsReport({
-    required String pumperId,
-    required DateTime startDate,
-    required DateTime endDate,
-  }) {
-    // Set start of day and end of day to capture full data
-    DateTime start = DateTime(startDate.year, startDate.month, startDate.day, 0, 0, 0);
-    DateTime end = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+  return _shiftCollection
+      .where('date', isEqualTo: Timestamp.fromDate(searchDate))
+      .snapshots()
+      .map((snap) => snap.docs
+          .map((doc) => ShiftModel.fromMap(
+              doc.data() as Map<String, dynamic>, doc.id))
+          .toList());
+}
 
-    return _shiftCollection
-        .where('pumperId', isEqualTo: pumperId)
-        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(end))
-        .orderBy('date', descending: true)
-        .snapshots()
-        .map((snap) => snap.docs
-            .map((doc) => ShiftModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
-            .toList());
-  }
+// Stream for My Schedule (pumper's own shifts)
+Stream<List<ShiftModel>> getShiftsReport({
+  required String pumperId,
+  required DateTime startDate,
+  required DateTime endDate,
+}) {
+  // ← changed to UTC
+  DateTime start = DateTime.utc(startDate.year, startDate.month, startDate.day);
+  DateTime end = DateTime.utc(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+
+  return _shiftCollection
+      .where('pumperId', isEqualTo: pumperId)
+      .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+      .where('date', isLessThanOrEqualTo: Timestamp.fromDate(end))
+      .orderBy('date', descending: true)
+      .snapshots()
+      .map((snap) => snap.docs
+          .map((doc) => ShiftModel.fromMap(
+              doc.data() as Map<String, dynamic>, doc.id))
+          .toList());
+}
 }

@@ -121,7 +121,6 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
             child: _buildGlow(AppColors.primaryGreen),
           ),
 
-
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -133,18 +132,17 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
                   const SizedBox(height: 15),
                   _buildComposeCard(),
 
-                     const SizedBox(height: 15),
+                  const SizedBox(height: 15),
 
                   // ── Target Audience ──
                   _buildSectionLabel("SELECT AUDIENCE"),
-                               const SizedBox(height: 15),
+                  const SizedBox(height: 15),
                   _buildAudiencePicker(),
-              const SizedBox(height: 15),
+                  const SizedBox(height: 15),
 
-         
                   _buildPreviewCard(),
 
-                        const SizedBox(height: 15),
+                  const SizedBox(height: 20),
 
                   // ── Send Button ──
                   FuelButton(
@@ -153,13 +151,12 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
                     onPressed: _handleSend,
                   ),
 
-                             const SizedBox(height: 15),
+                  const SizedBox(height: 15),
 
                   // ── Recent Notifications ──
                   _buildSectionLabel("RECENT BROADCASTS"),
-                     const SizedBox(height: 15),
+                  const SizedBox(height: 15),
                   _buildRecentList(),
-
                 ],
               ),
             ),
@@ -249,9 +246,7 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
                     : AppColors.surface.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isSelected
-                      ? AppColors.primaryGreen
-                      : Colors.white10,
+                  color: isSelected ? AppColors.primaryGreen : Colors.white10,
                   width: isSelected ? 1.5 : 1,
                 ),
               ),
@@ -306,9 +301,7 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
       decoration: BoxDecoration(
         color: AppColors.surface.withOpacity(0.3),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primaryGreen.withOpacity(0.2),
-        ),
+        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -413,10 +406,7 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
 
             return Container(
               margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: AppColors.surface.withOpacity(0.4),
                 borderRadius: BorderRadius.circular(14),

@@ -422,3 +422,30 @@ async function getPumperName(pumperId) {
     return "Unknown";
   }
 }
+
+// ✅ Notify pumper when they receive a swap request
+exports.notifySwapRequest = onDocumentCreated(
+  { document: "swapRequests/{swapId}", region: "us-central1" },
+  async (event) => {
+    const swap = event.data.data();
+
+    // Notify the target pumper (Pumper B)
+    const tokenDoc = await admin.firestore()
+      .collection("fcm_tokens")
+      .doc(swap.targetId)
+      .get();
+
+    if (!tokenDoc.exists) return null;
+
+    await admin.messaging().send({
+      notification: {
+        title: "🔄 Shift Swap Request!",
+        body: `${swap.requesterName} wants to swap their ${swap.requesterShiftType} (${swap.requesterPump}) with your ${swap.targetShiftType} (${swap.targetPump}).`,
+      },
+      data: { screen: "swap_requests" },
+      token: tokenDoc.data().token,
+    });
+
+    return null;
+  }
+);
