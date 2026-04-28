@@ -6,6 +6,7 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:petrofy/models/user_model.dart';
 import 'package:petrofy/pages/admin/admin_profile_page.dart';
 import 'package:petrofy/pages/admin/fuel_dashboard.dart';
+import 'package:petrofy/pages/pumper/my_schedule_page.dart';
 import 'package:petrofy/pages/reports/reporting_hub_page.dart';
 import 'package:petrofy/pages/ai_dashboard_screen.dart';
 import 'package:petrofy/pages/pumper/add_sale_page.dart';
@@ -17,22 +18,71 @@ import '../utils/app_colors.dart';
 
 class MainNavigationShell extends StatefulWidget {
   final String userRole;
-  const MainNavigationShell({super.key, required this.userRole});
+  final String? initialTab; // ← receives tab name from notification tap
+
+  const MainNavigationShell({
+    super.key,
+    required this.userRole,
+    this.initialTab,
+  });
 
   @override
   State<MainNavigationShell> createState() => _MainNavigationShellState();
 }
 
 class _MainNavigationShellState extends State<MainNavigationShell> {
-  int _currentIndex = 0;
+  late int _currentIndex;
   late PageController _pageController;
-  UserModel? _currentUser; // Holds the fetched user data
+  UserModel? _currentUser;
 
   @override
   void initState() {
     super.initState();
+    // Set starting tab based on notification tap, else default to 0
+    _currentIndex = _resolveInitialTab();
     _pageController = PageController(initialPage: _currentIndex);
-    _fetchUserData(); // Fetch user data on startup
+    _fetchUserData();
+  }
+
+  // Maps notification screen name → tab index for each role
+  int _resolveInitialTab() {
+    if (widget.initialTab == null) return 0;
+
+    if (widget.userRole == 'pumper') {
+      switch (widget.initialTab) {
+        case 'shifts':    return 2; // Shifts tab index for pumper
+        case 'sales':     return 1;
+        default:          return 0;
+      }
+    }
+
+    if (widget.userRole == 'admin' || widget.userRole == 'manager') {
+      switch (widget.initialTab) {
+        case 'shifts':    return 0; // managers see shifts in Stock/dashboard
+        case 'sales':     return 0;
+        default:          return 0;
+      }
+    }
+
+    if (widget.initialTab == 'shop') return 0;
+
+    return 0;
+  }
+
+  @override
+  void didUpdateWidget(MainNavigationShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If a new notification arrives while app is open, jump to that tab
+    if (widget.initialTab != oldWidget.initialTab &&
+        widget.initialTab != null) {
+      final newIndex = _resolveInitialTab();
+      _pageController.animateToPage(
+        newIndex,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+      setState(() => _currentIndex = newIndex);
+    }
   }
 
   @override
@@ -41,7 +91,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     super.dispose();
   }
 
-  // Fetch the logged-in user details from Firestore
   void _fetchUserData() async {
     User? firebaseUser = FirebaseAuth.instance.currentUser;
     if (firebaseUser != null) {
@@ -52,15 +101,14 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
       if (doc.exists) {
         setState(() {
-          _currentUser = UserModel.fromMap(doc.data() as Map<String, dynamic>);
+          _currentUser =
+              UserModel.fromMap(doc.data() as Map<String, dynamic>);
         });
       }
     }
   }
 
-  // 1. Define Pages based on Role
   List<Widget> _buildPages() {
-    // Show loading while user data is being fetched
     if (_currentUser == null) {
       return List.generate(
         4,
@@ -76,14 +124,14 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         return [
           const FuelLevelDashboard(),
           DashboardScreen(),
-        ReportingHubPage(),
-          AdminProfilePage(user: _currentUser!), // Pass actual user
+          ReportingHubPage(),
+          AdminProfilePage(user: _currentUser!),
         ];
       case 'pumper':
         return [
           const FuelLevelDashboard(),
           const AddSalePage(),
-          ShiftViewPage(user: _currentUser!), // Pass actual user
+          MySchedulePage(user: _currentUser!),
           PumperProfilePage(user: _currentUser!),
         ];
       default:
@@ -95,7 +143,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     }
   }
 
-  // 2. Define Animated GNav Buttons
   List<GButton> _buildNavButtons() {
     if (widget.userRole == 'admin' || widget.userRole == 'manager') {
       return const [
@@ -140,13 +187,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
               color: AppColors.primaryGreen.withOpacity(0.2),
               width: 1.5,
             ),
-            //    boxShadow: [
-            //    BoxShadow(
-            //      color: AppColors.primaryGreen.withOpacity(0.1),
-            //      blurRadius: 20,
-            //      spreadRadius: 2,
-            //    ),
-            //   ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(30),
@@ -163,11 +203,10 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                   color: AppColors.textDim,
                   activeColor: AppColors.primaryGreen,
                   iconSize: 24,
-                  tabBackgroundColor: AppColors.primaryGreen.withOpacity(0.1),
+                  tabBackgroundColor:
+                      AppColors.primaryGreen.withOpacity(0.1),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
+                      horizontal: 16, vertical: 12),
                   selectedIndex: _currentIndex,
                   onTabChange: (index) {
                     _pageController.animateToPage(

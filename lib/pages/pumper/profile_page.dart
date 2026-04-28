@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petrofy/home_page.dart';
+import 'package:petrofy/pages/pumper/my_schedule_page.dart';
+import 'package:petrofy/pages/pumper/preferences_page.dart';
 import '../../models/user_model.dart';
 import '../../models/fuel_sale_model.dart';
 import '../../services/cloudinary_service.dart';
@@ -182,6 +184,20 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
                     ),
                   ),
                   _buildMenuButton(
+                "MY SCHEDULE",
+                    "Edit shift prefrences for automated sheduling",
+                    Icons.edit_calendar_rounded,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                             MySchedulePage(user: widget.user),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
                     "Duty History",
                     "Review assigned shifts and pumps",
                     Icons.assignment_turned_in_outlined,
@@ -190,7 +206,21 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
                       ShiftHistoryPopup(pumperId: widget.user.uid),
                     ),
                   ),
-               
+
+                  _buildMenuButton(
+                    "Edit Shift Preferences",
+                    "Edit shift prefrences for automated sheduling",
+                    Icons.edit_calendar_rounded,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              PreferencesPage(user: widget.user),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -204,11 +234,14 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.1), width: 1.5),
-      ),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: AppColors.primaryGreen.withOpacity(0.1),
+            width: 1.5,
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

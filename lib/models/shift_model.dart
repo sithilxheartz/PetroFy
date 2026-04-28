@@ -5,9 +5,10 @@ class ShiftModel {
   final String pumperId;
   final String pumperName;
   final DateTime date;
-  final String shiftType; // Day / Night
-  final String pumpNumber; // Pump 01 - 06
-  final String status; // pending / accepted / rejected
+  final String shiftType;
+  final String pumpNumber;
+  final String status;
+  final bool isAutoAssigned; // ← ADD THIS
 
   ShiftModel({
     this.id,
@@ -17,6 +18,7 @@ class ShiftModel {
     required this.shiftType,
     required this.pumpNumber,
     this.status = 'pending',
+    this.isAutoAssigned = false, // ← ADD THIS
   });
 
   factory ShiftModel.fromMap(Map<String, dynamic> map, String docId) {
@@ -28,6 +30,7 @@ class ShiftModel {
       shiftType: map['shiftType'] ?? '',
       pumpNumber: map['pumpNumber'] ?? '',
       status: map['status'] ?? 'pending',
+      isAutoAssigned: map['isAutoAssigned'] ?? false, // ← ADD THIS
     );
   }
 
@@ -39,6 +42,7 @@ class ShiftModel {
       'shiftType': shiftType,
       'pumpNumber': pumpNumber,
       'status': status,
+      'isAutoAssigned': isAutoAssigned, // ← ADD THIS
     };
   }
 }

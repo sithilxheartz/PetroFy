@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:petrofy/home_page.dart';
 import 'package:petrofy/pages/admin/add_order_page.dart';
 import 'package:petrofy/pages/admin/admin_lubricant_list_page.dart';
+import 'package:petrofy/pages/admin/generate_schedule_page.dart';
 import 'package:petrofy/pages/admin/send_notification_page.dart';
 import 'package:petrofy/pages/admin/lubricant_grn_page.dart';
 import 'package:petrofy/pages/admin/manage_orders_page.dart';
@@ -89,21 +90,19 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                       );
                     },
                   ),
-
                   _buildMenuButton(
-                    "Fuel Rate Control",
-                    "Configure real-time LKR pricing for fuel types",
-                    Icons.app_registration_rounded,
+                    "Generate Shift Schedules",
+                    "Automatically generate pumper work Schedule",
+                    Icons.calendar_today_outlined,
                     () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const PriceConfigPage(),
+                          builder: (context) => GenerateSchedulePage(),
                         ),
                       );
                     },
                   ),
-
                   const SizedBox(height: 5),
 
                   // --- INVENTORY & LOGISTICS ---
@@ -181,6 +180,19 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const UserManagementPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
+                    "Fuel Rate Control",
+                    "Configure real-time LKR pricing for fuel types",
+                    Icons.app_registration_rounded,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PriceConfigPage(),
                         ),
                       );
                     },
@@ -362,7 +374,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
       ),
     );
   }
-
 
   Widget _buildGlow() {
     return Container(

@@ -12,7 +12,6 @@ import 'package:petrofy/pages/main_navigation_shell.dart';
 import 'firebase_options.dart';
 import 'pages/login_page.dart';
 
-// ✅ Must be top-level function (outside any class)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Background messages handled silently
@@ -21,11 +20,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // ✅ Register background handler BEFORE runApp
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-  // ✅ Initialize notification service
   await NotificationService.initialize();
 
   runApp(
@@ -45,25 +40,65 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-// ✅ Changed to StatefulWidget so we can use initState
 class _MyAppState extends State<MyApp> {
+  // Stores which tab to open when notification is tapped
+  String? _initialTabFromNotification;
+
   @override
   void initState() {
     super.initState();
 
-    // When app opened from terminated state via notification tap
+    // App opened from terminated state by tapping notification
     FirebaseMessaging.instance.getInitialMessage().then((message) {
-      if (message?.data['screen'] == 'shop') {
-        // TODO: navigate to shop tab if needed
+      if (message != null) {
+        _handleNotificationTap(message.data);
       }
     });
 
-    // When app is in background and notification is tapped
+    // App was in background, notification tapped
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      if (message.data['screen'] == 'shop') {
-        // TODO: navigate to shop tab if needed
-      }
+      _handleNotificationTap(message.data);
     });
+
+    // Check if a foreground local notification was tapped
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final screen = NotificationService.getPendingScreen();
+      if (screen != null) _handleNotificationTap({'screen': screen});
+    });
+  }
+
+  void _handleNotificationTap(Map<String, dynamic> data) {
+    final screen = data['screen'];
+
+    if (screen == 'my_schedule' || screen == 'generate_schedule' ||
+        screen == 'shifts') {
+      // Small delay to ensure widget tree is ready
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (!mounted) return;
+        setState(() {
+          // 'shifts' tells MainNavigationShell to open the shifts tab
+          _initialTabFromNotification = 'shifts';
+        });
+      });
+    }
+
+    if (screen == 'shop') {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (!mounted) return;
+        setState(() {
+          _initialTabFromNotification = 'shop';
+        });
+      });
+    }
+
+    if (screen == 'sales') {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (!mounted) return;
+        setState(() {
+          _initialTabFromNotification = 'sales';
+        });
+      });
+    }
   }
 
   @override
@@ -93,9 +128,7 @@ class _MyAppState extends State<MyApp> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
               body: Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primaryGreen,
-                ),
+                child: CircularProgressIndicator(color: AppColors.primaryGreen),
               ),
             );
           }
@@ -111,8 +144,7 @@ class _MyAppState extends State<MyApp> {
                   return const Scaffold(
                     body: Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.primaryGreen,
-                      ),
+                          color: AppColors.primaryGreen),
                     ),
                   );
                 }
@@ -122,7 +154,11 @@ class _MyAppState extends State<MyApp> {
                   role = userDoc.data!.get('role');
                 }
 
-                return MainNavigationShell(userRole: role);
+                return MainNavigationShell(
+                  userRole: role,
+                  // Pass the tab name from notification tap (null = default)
+                  initialTab: _initialTabFromNotification,
+                );
               },
             );
           }

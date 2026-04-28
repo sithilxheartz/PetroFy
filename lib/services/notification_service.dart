@@ -8,6 +8,14 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
+  // Stores screen to navigate to when foreground notification is tapped
+  static String? _pendingScreen;
+  static String? getPendingScreen() {
+    final s = _pendingScreen;
+    _pendingScreen = null;
+    return s;
+  }
+
   static Future<void> initialize() async {
     // 1. Request permission
     await _messaging.requestPermission(
@@ -16,12 +24,19 @@ class NotificationService {
       sound: true,
     );
 
-    // 2. Setup local notifications
+    // 2. Setup local notifications with tap handler
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
     await _localNotifications.initialize(
       const InitializationSettings(android: androidSettings),
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        // Fired when user taps a local notification while app is open
+        final screen = response.payload;
+        if (screen != null) {
+          _pendingScreen = screen;
+        }
+      },
     );
 
     // 3. Save FCM token
@@ -36,7 +51,7 @@ class NotificationService {
     });
   }
 
-static Future<void> saveTokenToFirestore() async {
+  static Future<void> saveTokenToFirestore() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
@@ -50,7 +65,6 @@ static Future<void> saveTokenToFirestore() async {
 
     final role = userDoc.data()?['role'] ?? 'customer';
 
-    // ✅ Save tokens for customers, admins AND pumpers
     await FirebaseFirestore.instance
         .collection('fcm_tokens')
         .doc(user.uid)
@@ -68,12 +82,14 @@ static Future<void> saveTokenToFirestore() async {
       message.notification?.body,
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'new_products',
-          'New Products',
+          'shift_schedule',
+          'Shift Schedule',
           importance: Importance.high,
           priority: Priority.high,
         ),
       ),
+      // Pass screen name as payload so tap navigation works
+      payload: message.data['screen'],
     );
   }
 }
