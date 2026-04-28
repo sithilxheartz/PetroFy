@@ -397,7 +397,7 @@ class _PumperProfilePageState extends State<PumperProfilePage> {
       height: 250,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.primaryGreen.withOpacity(0.03),
+        color: AppColors.primaryGreen.withOpacity(0.05),
       ),
     );
   }

@@ -11,7 +11,6 @@ import 'package:petrofy/pages/reports/reporting_hub_page.dart';
 import 'package:petrofy/pages/ai_dashboard_screen.dart';
 import 'package:petrofy/pages/pumper/add_sale_page.dart';
 import 'package:petrofy/pages/pumper/pumper_profile_page.dart';
-import 'package:petrofy/pages/pumper/shift_view_page.dart';
 import 'package:petrofy/pages/shop/customer_profile_page.dart';
 import 'package:petrofy/pages/shop/lubricant_store_page.dart';
 import '../utils/app_colors.dart';

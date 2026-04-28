@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:petrofy/pages/pumper/preferences_page.dart';
 import 'package:petrofy/pages/pumper/request_swap_page.dart';
 import 'package:petrofy/pages/pumper/swap_requests_page.dart';
 import '../../models/shift_model.dart';
