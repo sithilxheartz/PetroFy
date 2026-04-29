@@ -36,78 +36,6 @@ class _FuelLevelDashboardState extends State<AdminFuelLevelDashboard> {
     return Scaffold(
       backgroundColor: AppColors.background,
       extendBodyBehindAppBar: true,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(
-          bottom: 130,
-          right: 4
-        ), // ← pushes above bottom nav bar
-        child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('reorderSuggestions')
-              .where('status', isEqualTo: 'pending')
-              .snapshots(),
-          builder: (context, snapshot) {
-            final count = snapshot.data?.docs.length ?? 0;
-            return Stack(
-              clipBehavior: Clip.none,
-              children: [
-                SizedBox(
-                  height: 50,
-                  child: FloatingActionButton.extended(
-                    onPressed: _goToReorderPage,
-                  
-                    backgroundColor: AppColors.surface.withOpacity(0.8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(
-                        color: AppColors.primaryGreen.withOpacity(0.1),
-                        width: 1.5,
-                      ),
-                    ),
-                    icon: const Icon(
-                      Icons.auto_awesome_outlined,
-                      color: AppColors.primaryGreen,
-                      size: 20,
-                    ),
-                    label: const Text(
-                      "Reorder Suggestions",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      //  fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ),
-                if (count > 0)
-                  Positioned(
-                    right: -4,
-                    top: -4,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: const BoxDecoration(
-                        color: Colors.orange,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          "$count",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            );
-          },
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       appBar: AppBar(
         title: const Text(
           "FUEL INVENTORY",
@@ -119,10 +47,11 @@ class _FuelLevelDashboardState extends State<AdminFuelLevelDashboard> {
         ),
         backgroundColor: AppColors.background.withOpacity(0.5),
         elevation: 0,
-                actions: [_buildFilterDropdown()],
+        actions: [_buildFilterDropdown()],
       ),
       body: Stack(
         children: [
+          // ── BACKGROUND GLOW ──
           Positioned(
             top: -50,
             right: -50,
@@ -135,6 +64,8 @@ class _FuelLevelDashboardState extends State<AdminFuelLevelDashboard> {
               ),
             ),
           ),
+
+          // ── TANK LIST ──
           StreamBuilder<List<FuelTankModel>>(
             stream: _fuelService.getTanksByType(_selectedFilter),
             builder: (context, snapshot) {
@@ -152,6 +83,102 @@ class _FuelLevelDashboardState extends State<AdminFuelLevelDashboard> {
                 itemBuilder: (context, index) => _buildTankCard(tanks[index]),
               );
             },
+          ),
+
+          // ── REORDER BUTTON — always fixed at bottom right ──
+          Positioned(
+            // Distance from bottom — accounts for nav bar height
+            top: 100,
+            right: 20,
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('reorderSuggestions')
+                  .where('status', isEqualTo: 'pending')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                final count = snapshot.data?.docs.length ?? 0;
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    // ── MAIN BUTTON ──
+                    GestureDetector(
+                      onTap: _goToReorderPage,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface.withOpacity(0.95),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: count > 0
+                                ? AppColors.primaryGreen.withOpacity(0.2)
+                                : AppColors.primaryGreen.withOpacity(0.2),
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              count > 0
+                                  ? Icons.auto_awesome_outlined
+                                  : Icons.done_all_outlined,
+                              color: count > 0
+                                  ? AppColors.primaryGreen
+                                  : AppColors.primaryGreen,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              count > 0 ? "$count REORDER ALERT" : "WELL STOCKED",
+                              style: TextStyle(
+                                color: count > 0 ? Colors.white : Colors.white,
+                        fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // ── BADGE DOT ──
+                    if (count > 0)
+                      Positioned(
+                        right: -4,
+                        top: -4,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            color: Colors.orange,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              "$count",
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
           ),
         ],
       ),

@@ -70,12 +70,7 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
 
               final tanks = snapshot.data!;
               return ListView.builder(
-                padding: const EdgeInsets.fromLTRB(
-                  20,
-                  100,
-                  20,
-                  140,
-                ), // Top padding for transparent AppBar
+                padding: const EdgeInsets.fromLTRB(20, 100, 20, 140),
                 itemCount: tanks.length,
                 itemBuilder: (context, index) => _buildTankCard(tanks[index]),
               );
@@ -89,7 +84,9 @@ class _FuelLevelDashboardState extends State<FuelLevelDashboard> {
   Widget _buildTankCard(FuelTankModel tank) {
     double percentage = (tank.currentQuantity / tank.capacity) * 100;
     bool isLow = percentage < 20; // Alert if below 20%
-    Color statusColor = isLow ? const Color.fromARGB(202, 255, 82, 82) : const Color.fromARGB(180, 0, 255, 136);
+    Color statusColor = isLow
+        ? const Color.fromARGB(202, 255, 82, 82)
+        : const Color.fromARGB(180, 0, 255, 136);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
