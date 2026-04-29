@@ -221,8 +221,9 @@ exports.generateWeeklySchedule = onCall(
     if (!request.auth) throw new Error("unauthenticated");
     const callerDoc = await admin.firestore()
       .collection("users").doc(request.auth.uid).get();
-    if (!callerDoc.exists || callerDoc.data().role !== "manager") {
-      throw new Error("permission-denied: Managers only.");
+    const role = callerDoc.data().role;
+    if (!callerDoc.exists || (role !== "manager" && role !== "admin")) {
+      throw new Error("permission-denied: Managers and Admins only.");
     }
 
     // Figure out which week to schedule
@@ -352,25 +353,39 @@ exports.generateWeeklySchedule = onCall(
     }
 
     // Also notify manager that generation is complete
-    try {
-      const managerTokenDoc = await admin.firestore()
-        .collection("fcm_tokens")
-        .doc(request.auth.uid)
-        .get();
+// Replace the existing manager notification block with this:
+try {
+  // Get all admin + manager tokens
+  const adminTokens = await admin.firestore()
+    .collection("fcm_tokens")
+    .where("role", "==", "admin")
+    .get();
 
-      if (managerTokenDoc.exists) {
-        await admin.messaging().send({
-          notification: {
-            title: "Shift Schedules Generated!",
-            body: `${scheduleEntries.length} shifts assigned for ${weekLabel} — ${weekEndLabel}.${unassigned.length > 0 ? ` ⚠️ ${unassigned.length} slots unassigned.` : ""}`,
-          },
-          data: { screen: "generate_schedule" },
-          token: managerTokenDoc.data().token,
-        });
-      }
-    } catch (e) {
-      console.log(`⚠️ Could not notify manager: ${e.message}`);
-    }
+  const managerTokens = await admin.firestore()
+    .collection("fcm_tokens")
+    .where("role", "==", "manager")
+    .get();
+
+  const allStaffDocs = [
+    ...adminTokens.docs,
+    ...managerTokens.docs,
+  ];
+
+  if (allStaffDocs.length > 0) {
+    const staffTokenList = allStaffDocs.map((doc) => doc.data().token);
+
+    await admin.messaging().sendEachForMulticast({
+      notification: {
+        title: "Shift Schedule Generated",
+        body: `${scheduleEntries.length} shifts assigned for ${weekLabel} — ${weekEndLabel}.${unassigned.length > 0 ? ` ⚠️ ${unassigned.length} slots unassigned.` : " All pumps fully staffed!"}`,
+      },
+      data: { screen: "generate_schedule" },
+      tokens: staffTokenList,
+    });
+  }
+} catch (e) {
+  console.log(`⚠️ Could not notify staff: ${e.message}`);
+}
 
     return {
       success: true,
