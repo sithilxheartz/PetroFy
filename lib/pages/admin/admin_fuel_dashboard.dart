@@ -160,14 +160,14 @@ class _FuelLevelDashboardState extends State<AdminFuelLevelDashboard> {
                           width: 20,
                           height: 20,
                           decoration: const BoxDecoration(
-                            color: Colors.orange,
+                            color: Colors.red,
                             shape: BoxShape.circle,
                           ),
                           child: Center(
                             child: Text(
                               "$count",
                               style: const TextStyle(
-                                color: Colors.black,
+                                color: Colors.white,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
