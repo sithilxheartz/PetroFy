@@ -500,7 +500,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       color: AppColors.primaryGreen,
       backgroundColor: AppColors.surface,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 15, 20, 140),
+        padding: const EdgeInsets.fromLTRB(20, 15, 20, 0),
         children: [
           _overviewBar(sd),
           const SizedBox(height: 14),
