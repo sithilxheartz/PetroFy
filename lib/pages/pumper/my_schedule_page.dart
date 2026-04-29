@@ -83,7 +83,11 @@ class _MySchedulePageState extends State<MySchedulePage> {
                 clipBehavior: Clip.none,
                 children: [
                   Padding(
-                           padding: const EdgeInsets.only(right: 15, top: 8, bottom: 8),
+                    padding: const EdgeInsets.only(
+                      right: 15,
+                      top: 8,
+                      bottom: 8,
+                    ),
                     child: SizedBox(
                       width: 145,
                       height: 35,

@@ -542,3 +542,170 @@ exports.notifyLowFuelLevel = onDocumentUpdated(
     return null;
   }
 );
+
+// ✅ Smart Reorder Suggestion — runs daily at 8:00 AM Sri Lanka time
+const { onSchedule } = require("firebase-functions/v2/scheduler");
+
+exports.smartReorderSuggestion = onSchedule(
+  {
+   // schedule: "0 8 * * *",        // Every day at 8:00 AM
+   // schedule: "*/3 * * * *",  // every 2 minutes for testing
+schedule: "0 8 * * *",        // Every day at 8:00 AM
+timeZone: "Asia/Colombo",
+    region: "us-central1",
+  },
+  async (event) => {
+    console.log("🔍 Running smart reorder check...");
+
+    const LEAD_DAYS     = 3;   // Warn 3 days before hitting 20%
+    const THRESHOLD_PCT = 0.20; // 20% threshold
+
+    // 1. Get all fuel tanks
+    const tanksSnap = await admin.firestore()
+      .collection("fuelTanks")
+      .get();
+
+    if (tanksSnap.empty) {
+      console.log("No tanks found");
+      return;
+    }
+
+    // 2. Get sales from last 14 days for better average accuracy
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+    const salesSnap = await admin.firestore()
+      .collection("fuelSales")
+      .where("dateTime", ">=", admin.firestore.Timestamp.fromDate(fourteenDaysAgo))
+      .get();
+
+    // 3. Group sales by fuel type and calculate daily average
+    const salesByFuel = {};
+    for (const doc of salesSnap.docs) {
+      const sale = doc.data();
+      const fuel = sale.fuelType;
+      if (!salesByFuel[fuel]) salesByFuel[fuel] = 0;
+      salesByFuel[fuel] += sale.soldQuantity ?? 0;
+    }
+
+    // Daily average = total sold in 14 days / 14
+    const dailyAvgByFuel = {};
+    for (const [fuel, total] of Object.entries(salesByFuel)) {
+      dailyAvgByFuel[fuel] = total / 14;
+    }
+
+    // 4. Get admin + manager FCM tokens
+    const [adminSnap, managerSnap] = await Promise.all([
+      admin.firestore().collection("fcm_tokens")
+        .where("role", "==", "admin").get(),
+      admin.firestore().collection("fcm_tokens")
+        .where("role", "==", "manager").get(),
+    ]);
+
+    const allStaffDocs = [...adminSnap.docs, ...managerSnap.docs];
+    const staffTokens  = allStaffDocs.map((d) => d.data().token);
+
+    if (staffTokens.length === 0) {
+      console.log("No staff tokens found");
+      return;
+    }
+
+    // 5. Analyze each tank
+    for (const tankDoc of tanksSnap.docs) {
+      const tank            = tankDoc.data();
+      const fuelType        = tank.fuelType;
+      const capacity        = tank.capacity        ?? 0;
+      const currentQuantity = tank.currentQuantity ?? 0;
+
+      if (capacity === 0) continue;
+
+      const thresholdQty   = capacity * THRESHOLD_PCT; // 20% of capacity
+      const dailyAvg       = dailyAvgByFuel[fuelType] ?? 0;
+
+      // Skip if no sales data for this fuel type
+      if (dailyAvg <= 0) {
+        console.log(`⚠️ No sales data for ${fuelType}, skipping`);
+        continue;
+      }
+
+      // How many liters above the threshold?
+      const litersAboveThreshold = currentQuantity - thresholdQty;
+
+      // How many days until we hit the threshold?
+      const daysUntilThreshold = litersAboveThreshold / dailyAvg;
+
+      const currentPct = ((currentQuantity / capacity) * 100).toFixed(1);
+
+      console.log(
+        `${fuelType}: ${currentQuantity}L (${currentPct}%) — ` +
+        `avg ${dailyAvg.toFixed(0)}L/day — ` +
+        `hits 20% in ${daysUntilThreshold.toFixed(1)} days`
+      );
+
+      // 6. Only notify if hitting threshold within LEAD_DAYS
+      if (daysUntilThreshold <= LEAD_DAYS && currentQuantity > thresholdQty) {
+
+        // Calculate suggested order quantity
+        // Fill to 95% of capacity minus current quantity
+        const suggestedOrder = Math.round(
+          (capacity * 0.95) - currentQuantity
+        );
+
+        // Format the predicted date
+        const predictedDate = new Date();
+        predictedDate.setDate(
+          predictedDate.getDate() + Math.floor(daysUntilThreshold)
+        );
+        const dateLabel = predictedDate.toLocaleDateString("en-GB", {
+          weekday: "long",
+          day: "2-digit",
+          month: "short",
+        });
+
+        const daysLabel = daysUntilThreshold < 1
+          ? "today"
+          : daysUntilThreshold < 2
+          ? "tomorrow"
+          : `in ${Math.floor(daysUntilThreshold)} days`;
+
+        // Send notification
+        await admin.messaging().sendEachForMulticast({
+          notification: {
+            title: `⛽ Order Suggestion: ${fuelType}`,
+            body:
+              `Currently ${currentPct}% (${Math.round(currentQuantity)}L). ` +
+              `Burning ~${Math.round(dailyAvg)}L/day. ` +
+              `Will hit 20% ${daysLabel} (${dateLabel}). ` +
+              `Suggested order: ${suggestedOrder.toLocaleString()}L.`,
+          },
+          data: {
+            screen:       "fuel_dashboard",
+            fuelType:     fuelType,
+            daysLeft:     String(Math.floor(daysUntilThreshold)),
+            suggestedQty: String(suggestedOrder),
+          },
+          tokens: staffTokens,
+        });
+
+        // Also save suggestion to Firestore so it shows in the app
+        await admin.firestore().collection("reorderSuggestions").add({
+          fuelType,
+          currentQuantity,
+          currentPercent:   parseFloat(currentPct),
+          dailyAvgConsumption: Math.round(dailyAvg),
+          daysUntilThreshold: parseFloat(daysUntilThreshold.toFixed(1)),
+          predictedDate:    admin.firestore.Timestamp.fromDate(predictedDate),
+          suggestedOrderQty: suggestedOrder,
+          capacity,
+          thresholdQty:     Math.round(thresholdQty),
+          createdAt:        admin.firestore.FieldValue.serverTimestamp(),
+          status:           "pending", // pending / ordered / dismissed
+        });
+
+        console.log(`✅ Reorder suggestion sent for ${fuelType}`);
+      }
+    }
+
+    console.log("✅ Smart reorder check complete");
+  }
+);

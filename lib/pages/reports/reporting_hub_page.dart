@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:petrofy/pages/admin/fuel_dashboard.dart';
+import 'package:petrofy/pages/shop/fuel_dashboard.dart';
 import 'package:petrofy/pages/reports/fuel_orders_report_page.dart';
 import 'package:petrofy/pages/reports/fuel_sales_reports_page.dart';
 import 'package:petrofy/pages/reports/store_report_page.dart';
