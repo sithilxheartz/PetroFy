@@ -88,6 +88,13 @@ class _MyAppState extends State<MyApp> {
       });
     }
 
+    if (screen == 'fuel_dashboard') {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (!mounted) return;
+        setState(() => _initialTabFromNotification = 'stock');
+      });
+    }
+
     if (screen == 'shop') {
       Future.delayed(const Duration(milliseconds: 300), () {
         if (!mounted) return;

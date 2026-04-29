@@ -439,12 +439,90 @@ exports.notifySwapRequest = onDocumentCreated(
 
     await admin.messaging().send({
       notification: {
-        title: "🔄 Shift Swap Request!",
+        title: "New Shift Swap Request!",
         body: `${swap.requesterName} wants to swap their ${swap.requesterShiftType} (${swap.requesterPump}) with your ${swap.targetShiftType} (${swap.targetPump}).`,
       },
       data: { screen: "swap_requests" },
       token: tokenDoc.data().token,
     });
+
+    return null;
+  }
+);
+
+// ✅ Notify admin when fuel tank drops below 20% capacity
+exports.notifyLowFuelLevel = onDocumentUpdated(
+  { document: "fuelTanks/{tankId}", region: "us-central1" },
+  async (event) => {
+    const before = event.data.before.data();
+    const after  = event.data.after.data();
+
+    const capacity        = after.capacity        ?? 0;
+    const prevQuantity    = before.currentQuantity ?? 0;
+    const currentQuantity = after.currentQuantity  ?? 0;
+
+    if (capacity === 0) return null;
+
+    const prevPercent    = (prevQuantity    / capacity) * 100;
+    const currentPercent = (currentQuantity / capacity) * 100;
+    const threshold      = 20;
+
+    // Only fire when it CROSSES below 20% — not on every update below 20%
+    // This prevents spam notifications
+    if (prevPercent >= threshold && currentPercent < threshold) {
+
+      const fuelType       = after.fuelType ?? "Unknown";
+      const remainingLiters = currentQuantity.toFixed(0);
+      const percentLeft    = currentPercent.toFixed(1);
+
+      console.log(`⚠️ LOW FUEL: ${fuelType} at ${percentLeft}%`);
+
+      // Get all admin tokens
+      const adminTokensSnapshot = await admin.firestore()
+        .collection("fcm_tokens")
+        .where("role", "==", "admin")
+        .get();
+
+      // Also get manager tokens
+      const managerTokensSnapshot = await admin.firestore()
+        .collection("fcm_tokens")
+        .where("role", "==", "manager")
+        .get();
+
+      // Combine all tokens
+      const allDocs = [
+        ...adminTokensSnapshot.docs,
+        ...managerTokensSnapshot.docs,
+      ];
+
+      if (allDocs.length === 0) {
+        console.log("No admin/manager tokens found");
+        return null;
+      }
+
+      const tokens = allDocs.map((doc) => doc.data().token);
+
+      const response = await admin.messaging().sendEachForMulticast({
+        notification: {
+          title: "⛽ Low Fuel Alert!",
+          body: `${fuelType} tank is at ${percentLeft}% — only ${remainingLiters}L remaining. Refill needed!`,
+        },
+        data: {
+          screen: "fuel_dashboard",
+          fuelType: fuelType,
+        },
+        tokens: tokens,
+      });
+
+      // Clean up invalid tokens
+      const batch = admin.firestore().batch();
+      response.responses.forEach((res, idx) => {
+        if (!res.success) batch.delete(allDocs[idx].ref);
+      });
+      await batch.commit();
+
+      console.log(`✅ Low fuel alert sent for ${fuelType}. Success: ${response.successCount}`);
+    }
 
     return null;
   }

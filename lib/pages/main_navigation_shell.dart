@@ -49,17 +49,25 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
     if (widget.userRole == 'pumper') {
       switch (widget.initialTab) {
-        case 'shifts':    return 2; // Shifts tab index for pumper
-        case 'sales':     return 1;
-        default:          return 0;
+        case 'shifts':
+          return 2; // Shifts tab index for pumper
+        case 'sales':
+          return 1;
+        default:
+          return 0;
       }
     }
 
     if (widget.userRole == 'admin' || widget.userRole == 'manager') {
       switch (widget.initialTab) {
-        case 'shifts':    return 0; // managers see shifts in Stock/dashboard
-        case 'sales':     return 0;
-        default:          return 0;
+        case 'stock':
+          return 0; // ← ADD THIS
+        case 'shifts':
+          return 0; // managers see shifts in Stock/dashboard
+        case 'sales':
+          return 0;
+        default:
+          return 0;
       }
     }
 
@@ -100,8 +108,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
       if (doc.exists) {
         setState(() {
-          _currentUser =
-              UserModel.fromMap(doc.data() as Map<String, dynamic>);
+          _currentUser = UserModel.fromMap(doc.data() as Map<String, dynamic>);
         });
       }
     }
@@ -202,10 +209,11 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                   color: AppColors.textDim,
                   activeColor: AppColors.primaryGreen,
                   iconSize: 24,
-                  tabBackgroundColor:
-                      AppColors.primaryGreen.withOpacity(0.1),
+                  tabBackgroundColor: AppColors.primaryGreen.withOpacity(0.1),
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 12),
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   selectedIndex: _currentIndex,
                   onTabChange: (index) {
                     _pageController.animateToPage(
