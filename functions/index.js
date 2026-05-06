@@ -131,7 +131,7 @@ exports.notifyNewOrder = onDocumentCreated(
 );
 
 // ─────────────────────────────────────────────────────────────
-// ✅ 5. Notify pumper + admin when shift is booked
+// ✅ 5. Notify pumper when shift is booked
 // ─────────────────────────────────────────────────────────────
 exports.notifyShiftBooked = onDocumentCreated(
   { document: "shiftSchedule/{shiftId}", region: "us-central1" },
@@ -148,19 +148,6 @@ exports.notifyShiftBooked = onDocumentCreated(
         },
         data: { screen: "shifts" },
         token: pumperTokenDoc.data().token,
-      });
-    }
-    const adminTokensSnapshot = await admin.firestore()
-      .collection("fcm_tokens").where("role", "==", "admin").get();
-    if (!adminTokensSnapshot.empty) {
-      const adminTokens = adminTokensSnapshot.docs.map((doc) => doc.data().token);
-      await admin.messaging().sendEachForMulticast({
-        notification: {
-          title: "New Shift Scheduled",
-          body: `${shift.pumperName} booked ${shift.shiftType} at ${shift.pumpNumber} on ${new Date(shift.date.toDate()).toDateString()}`,
-        },
-        data: { screen: "shifts" },
-        tokens: adminTokens,
       });
     }
     return null;
