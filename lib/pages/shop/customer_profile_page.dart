@@ -1,0 +1,256 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:petrofy/home_page.dart';
+import 'package:petrofy/services/cloudinary_service.dart';
+import 'package:petrofy/widgets/custom_components.dart';
+import 'package:petrofy/pages/shop/my_orders_page.dart';
+import '../../models/user_model.dart';
+import '../../utils/app_colors.dart';
+
+class CustomerProfilePage extends StatefulWidget {
+  final UserModel user;
+  const CustomerProfilePage({super.key, required this.user});
+
+  @override
+  State<CustomerProfilePage> createState() => _CustomerProfilePageState();
+}
+
+class _CustomerProfilePageState extends State<CustomerProfilePage> {
+  bool _isUploading = false;
+  late String _displayImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _displayImage = widget.user.profilePic;
+  }
+
+  // --- IMAGE UPLOAD LOGIC ---
+  Future<void> _handleImageUpload() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+    );
+
+    if (image != null && mounted) {
+      setState(() => _isUploading = true);
+      String? url = await CloudinaryService().uploadProfileImage(image);
+
+      if (url != null && mounted) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.user.uid)
+            .update({'profilePic': url});
+        setState(() => _displayImage = url);
+        showCustomSnackBar(context, "Profile Photo Updated");
+      }
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text(
+          "Welcome Back, ${widget.user.firstName}!",
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 21),
+        ),
+        backgroundColor: AppColors.background.withOpacity(0.5),
+        elevation: 0,
+        actions: [LogoutButton(), const SizedBox(width: 10)],
+      ),
+      body: Stack(
+        children: [
+          Positioned(top: -50, right: -50, child: _buildGlow()),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+              child: Column(
+                children: [
+                  _buildCustomerHeader(),
+                  const SizedBox(height: 20),
+
+                  _buildSectionLabel("SHOPPING ACTIVITY"),
+                  const SizedBox(height: 15),
+                  _buildMenuButton(
+                    "My Order History",
+                    "View past lubricant orders and receipts",
+                    Icons.history_rounded,
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MyOrdersPage(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- UPDATED AVATAR SECTION WITH PLUS ICON ---
+  Widget _buildCustomerHeader() {
+    return Column(
+      children: [
+        Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.primaryGreen.withOpacity(0.2),
+                  width: 2,
+                ),
+              ),
+              child: CircleAvatar(
+                radius: 55,
+                backgroundImage: NetworkImage(_displayImage),
+                backgroundColor: AppColors.surface,
+                child: _isUploading
+                    ? const CircularProgressIndicator(
+                        color: AppColors.primaryGreen,
+                      )
+                    : null,
+              ),
+            ),
+            // The Plus Icon Overlay
+            if (!_isUploading)
+              Positioned(
+                bottom: 5,
+                right: 5,
+                child: GestureDetector(
+                  onTap: _handleImageUpload,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryGreen,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: Colors.black45, blurRadius: 5),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.add_a_photo_rounded,
+                      size: 18,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 15),
+        Text(
+          "${widget.user.firstName} ${widget.user.lastName}",
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          widget.user.email,
+          style: const TextStyle(color: AppColors.textDim, fontSize: 12),
+        ),
+      ],
+    );
+  }
+
+  // --- UI HELPERS ---
+  Widget _buildSectionLabel(String label) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.primaryGreen,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuButton(
+    String title,
+    String sub,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(
+              color: AppColors.primaryGreen.withOpacity(0.1),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: AppColors.primaryGreen, size: 20),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      sub,
+                      style: const TextStyle(
+                        color: AppColors.textDim,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white12,
+                size: 14,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlow() {
+    return Container(
+      width: 250,
+      height: 250,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.primaryGreen.withOpacity(0.05),
+      ),
+    );
+  }
+}

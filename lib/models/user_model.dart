@@ -7,7 +7,8 @@ class UserModel {
   final String lastName;
   final String mobileNumber;
   final String dob;
-  final String role; // 'customer', 'pumper', 'manager', 'admin'
+  final String role;
+  final String profilePic; // Added field
   final DateTime joinedDate;
 
   UserModel({
@@ -18,10 +19,10 @@ class UserModel {
     required this.mobileNumber,
     required this.dob,
     required this.role,
+    required this.profilePic,
     required this.joinedDate,
   });
 
-  // 1. Convert Firestore Document -> UserModel Object
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       uid: map['uid'] ?? '',
@@ -31,12 +32,11 @@ class UserModel {
       mobileNumber: map['mobileNumber'] ?? '',
       dob: map['dob'] ?? '',
       role: map['role'] ?? 'customer',
-      // Firestore stores Dates as Timestamps, so we convert it:
+      profilePic: map['profilePic'] ?? 'https://ui-avatars.com/api/?name=${map['firstName']}+${map['lastName']}&background=00E676&color=fff',
       joinedDate: (map['joinedDate'] as Timestamp).toDate(),
     );
   }
 
-  // 2. Convert UserModel Object -> Map (for saving to Firestore)
   Map<String, dynamic> toMap() {
     return {
       'uid': uid,
@@ -46,7 +46,8 @@ class UserModel {
       'mobileNumber': mobileNumber,
       'dob': dob,
       'role': role,
-      'joinedDate': joinedDate, // Firestore handles DateTime auto-conversion
+      'profilePic': profilePic,
+      'joinedDate': joinedDate,
     };
   }
 }

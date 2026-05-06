@@ -1,0 +1,399 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:petrofy/home_page.dart';
+import 'package:petrofy/pages/admin/add_order_page.dart';
+import 'package:petrofy/pages/admin/admin_lubricant_list_page.dart';
+import 'package:petrofy/pages/admin/generate_schedule_page.dart';
+import 'package:petrofy/pages/admin/send_notification_page.dart';
+import 'package:petrofy/pages/admin/lubricant_grn_page.dart';
+import 'package:petrofy/pages/admin/manage_orders_page.dart';
+import 'package:petrofy/pages/admin/payment_approval_page.dart';
+import 'package:petrofy/pages/admin/price_config_page.dart';
+import 'package:petrofy/pages/admin/user_control_page.dart';
+import 'package:petrofy/pages/pumper/shift_view_page.dart';
+import 'package:petrofy/services/cloudinary_service.dart';
+import 'package:petrofy/widgets/custom_components.dart';
+import '../../models/user_model.dart';
+import '../../utils/app_colors.dart';
+
+class AdminProfilePage extends StatefulWidget {
+  final UserModel user;
+  const AdminProfilePage({super.key, required this.user});
+
+  @override
+  State<AdminProfilePage> createState() => _AdminProfilePageState();
+}
+
+class _AdminProfilePageState extends State<AdminProfilePage> {
+  bool _isUploading = false;
+  late String _displayImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _displayImage = widget.user.profilePic;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text(
+          "Welcome Back, ${widget.user.firstName}!",
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 21),
+        ),
+        backgroundColor: AppColors.background.withOpacity(0.5),
+        elevation: 0,
+        actions: [LogoutButton(), const SizedBox(width: 10)],
+      ),
+      body: Stack(
+        children: [
+          Positioned(top: -50, right: -50, child: _buildGlow()),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              child: Column(
+                children: [
+                  _buildAdminHeader(),
+                  const SizedBox(height: 20),
+
+                  _buildSectionLabel("FUEL STATION OPERATIONS"),
+                  const SizedBox(height: 15),
+
+                  _buildMenuButton(
+                    "Sales Payment Approval",
+                    "Review & approve pumper shift payments",
+                    Icons.fact_check_outlined,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              PaymentApprovalPage(adminUser: widget.user),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
+                    "Generate Shift Schedule",
+                    "Auto-assign pumpers for the upcoming week",
+                    Icons.auto_awesome_outlined,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GenerateSchedulePage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
+                    "Shift Schedule Roster",
+                    "See who's working on any given day",
+                    Icons.calendar_month,
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ShiftViewPage(user: widget.user), // ← fixed
+                      ),
+                    ),
+                  ),
+                  _buildMenuButton(
+                    "Fuel Stock Entry (GRN)",
+                    "Register incoming fuel delivery orders",
+                    Icons.add_business_outlined,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AddOrderPage(adminUser: widget.user),
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  // --- INVENTORY & LOGISTICS ---
+                  _buildSectionLabel("ONLINE STORE OPERATIONS"),
+                  const SizedBox(height: 15),
+                  _buildMenuButton(
+                    "Pending Online Orders",
+                    "Process active shipments & track deliveries",
+                    Icons.local_shipping_outlined,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ManageOrdersPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
+                    "Catalog Management",
+                    "Modify lubricant specifications & pricing",
+                    Icons.list,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AdminLubricantListPage(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  _buildMenuButton(
+                    "Product Stock Entry (GRN)",
+                    "Register incoming lubricant inventory",
+                    Icons.add_business_outlined,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LubricantGRNPage(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  // --- ADMINISTRATION ---
+                  _buildSectionLabel("SYSTEM OPERATIONS"),
+                  const SizedBox(height: 15),
+
+                  _buildMenuButton(
+                    "Broadcast Notification",
+                    "Send announcements to all users",
+                    Icons.notification_add,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SendNotificationPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
+                    "User Access Control",
+                    "Manage roles & system permissions",
+                    Icons.groups_outlined,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const UserManagementPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuButton(
+                    "Fuel Rate Control",
+                    "Configure real-time LKR pricing per fuel type",
+                    Icons.price_change_outlined,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PriceConfigPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- IMAGE UPLOAD LOGIC ---
+  Future<void> _handleImageUpload() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+    );
+
+    if (image != null && mounted) {
+      setState(() => _isUploading = true);
+      String? url = await CloudinaryService().uploadProfileImage(image);
+
+      if (url != null && mounted) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.user.uid)
+            .update({'profilePic': url});
+        setState(() => _displayImage = url);
+        showCustomSnackBar(context, "Cloud Sync Complete");
+      }
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+  // --- UI COMPONENTS ---
+
+  Widget _buildAdminHeader() {
+    return Column(
+      children: [
+        Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.primaryGreen.withOpacity(0.2),
+                  width: 2,
+                ),
+              ),
+              child: CircleAvatar(
+                radius: 55,
+                backgroundImage: NetworkImage(_displayImage),
+                backgroundColor: AppColors.surface,
+                child: _isUploading
+                    ? const CircularProgressIndicator(
+                        color: AppColors.primaryGreen,
+                      )
+                    : null,
+              ),
+            ),
+            // The Plus Icon Overlay
+            if (!_isUploading)
+              Positioned(
+                bottom: 5,
+                right: 5,
+                child: GestureDetector(
+                  onTap: _handleImageUpload,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryGreen,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: Colors.black45, blurRadius: 5),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.add_a_photo_rounded,
+                      size: 18,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 15),
+        Text(
+          "${widget.user.firstName} ${widget.user.lastName}",
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          widget.user.email,
+          style: const TextStyle(color: AppColors.textDim, fontSize: 12),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionLabel(String label) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.primaryGreen,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuButton(
+    String title,
+    String sub,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(
+              color: AppColors.primaryGreen.withOpacity(0.1),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: AppColors.primaryGreen, size: 20),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      sub,
+                      style: const TextStyle(
+                        color: AppColors.textDim,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white12,
+                size: 14,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlow() {
+    return Container(
+      width: 250,
+      height: 250,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.primaryGreen.withOpacity(0.05),
+      ),
+    );
+  }
+}
