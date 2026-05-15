@@ -4,8 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:petrofy/models/user_model.dart';
-import 'package:petrofy/pages/admin/admin_fuel_dashboard.dart';
+import 'package:petrofy/pages/pumper/pumper_fuel_dashboard.dart';
 import 'package:petrofy/pages/admin/admin_profile_page.dart';
+import 'package:petrofy/pages/admin/manager_fuel_dashboard.dart';
 import 'package:petrofy/pages/shop/fuel_dashboard.dart';
 import 'package:petrofy/pages/pumper/my_schedule_page.dart';
 import 'package:petrofy/pages/reports/reporting_hub_page.dart';
@@ -129,14 +130,14 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       case 'admin':
       case 'manager':
         return [
-          AdminFuelLevelDashboard(),
+          ManagerFuelLevelDashboard(),
           DashboardScreen(),
           ReportingHubPage(),
           AdminProfilePage(user: _currentUser!),
         ];
       case 'pumper':
         return [
-          const FuelLevelDashboard(),
+          const PumperFuelLevelDashboard(),
           const AddSalePage(),
           MySchedulePage(user: _currentUser!),
           PumperProfilePage(user: _currentUser!),
