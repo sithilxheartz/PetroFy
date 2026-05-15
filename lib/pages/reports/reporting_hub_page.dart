@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:petrofy/pages/admin/evaporation_screen.dart';
 import 'package:petrofy/pages/shop/fuel_dashboard.dart';
 import 'package:petrofy/pages/reports/fuel_orders_report_page.dart';
 import 'package:petrofy/pages/reports/fuel_sales_reports_page.dart';
@@ -115,7 +116,7 @@ class _ReportingHubPageState extends State<ReportingHubPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const FuelLevelDashboard(),
+                          builder: (context) => const EvaporationScreen(),
                         ),
                       );
                     },

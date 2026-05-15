@@ -92,9 +92,8 @@ exports.notifyPumperSaleApproved = onDocumentUpdated(
   }
 );
 
-// ─────────────────────────────────────────────────────────────
-// ✅ 4. Notify admin + customer when new order is placed
-// ─────────────────────────────────────────────────────────────
+
+// 4. Notify admin + customer when new order is placed
 exports.notifyNewOrder = onDocumentCreated(
   { document: "orders/{orderId}", region: "us-central1" },
   async (event) => {
@@ -530,7 +529,7 @@ exports.notifyLowFuelLevel = onDocumentUpdated(
   }
 );
 
-// ✅ Smart Reorder Suggestion — runs daily at 8:00 AM Sri Lanka time
+//Reorder Suggestion — runs daily at 8:00
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 
 exports.smartReorderSuggestion = onSchedule(
